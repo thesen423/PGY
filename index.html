@@ -2,9 +2,10 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
+<title>臨床技能課程報名</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-:root{--bg:#f3f6f8;--card:#fff;--tx:#18202b;--sub:#667085;--ln:#e4e8ee;--ac:#0e7c86;--ac2:#18a5b0;--acx:#fff;--bad:#c0392b;--ok:#1e8e5a;--warn:#b7791f;--chip:#e9f1f3;--sh:0 6px 20px rgba(16,24,40,.07)}
+:root{--bg:#f3f6f8;--card:#fff;--tx:#18202b;--sub:#667085;--ln:#e4e8ee;--ac:#2a9d8f;--ac2:#5fc0b2;--acx:#fff;--bad:#c0392b;--ok:#1e8e5a;--warn:#b7791f;--chip:#e7f5f2;--sh:0 6px 20px rgba(16,24,40,.07)}
 @media (prefers-color-scheme:dark){:root{--bg:#10151b;--card:#19202a;--tx:#e8ebf0;--sub:#9aa3b2;--ln:#2a3340;--ac:#2fb0bc;--ac2:#1d8c97;--acx:#06242a;--bad:#ef7b6e;--ok:#4cc88a;--warn:#e0b34f;--chip:#1f2833;--sh:0 6px 20px rgba(0,0,0,.35)}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 -apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;-webkit-font-smoothing:antialiased}
@@ -108,7 +109,7 @@ async function load(){
 function heroHtml(){
   const cs = S.courses || [], open = cs.filter(c => c.open);
   const seats = open.reduce((a, c) => a + Math.max(c.cap - c.count, 0), 0);
-  return `<div class="hero"><h1>🩺 課程報名</h1><p>自由報名・額滿後自動列入候補・可隨時取消</p>
+  return `<div class="hero"><h1>🩺 臨床技能課程報名</h1><p>自由報名・額滿後自動列入候補・可隨時取消</p>
     <div class="pills"><span class="pill">開放中 ${open.length} 門</span><span class="pill">剩餘名額 ${seats} 位</span></div></div>
     <div class="tabs"><button class="${S.view === "home" ? "on" : ""}" data-act="tab" data-v="home">課程報名</button><button class="${S.view === "mine" ? "on" : ""}" data-act="tab" data-v="mine">我的報名</button></div>`;
 }
