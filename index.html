@@ -6,8 +6,8 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22none%22%20stroke%3D%22%235e8a6a%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M14%209v15a8%208%200%200%200%2016%200V9%22/%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%227%22%20r%3D%222%22/%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%227%22%20r%3D%222%22/%3E%3Cpath%20d%3D%22M22%2032v8a12%2012%200%200%200%2024%200v-6%22/%3E%3Ccircle%20cx%3D%2246%22%20cy%3D%2228%22%20r%3D%226%22/%3E%3Ccircle%20cx%3D%2246%22%20cy%3D%2228%22%20r%3D%221.8%22%20fill%3D%22%235e8a6a%22/%3E%3C/svg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-:root{--ink:45,45,42;--g:94,138,106;--bg:#f6f4ee;--card:#f6f4ee;--tx:rgb(var(--ink));--sub:rgba(var(--ink),.58);--ln:rgba(var(--ink),.22);--ac:rgb(var(--g));--ac2:rgba(var(--g),.55);--acx:#f6f4ee;--bad:rgb(var(--ink));--ok:rgb(var(--g));--warn:rgb(var(--ink));--chip:rgba(var(--g),.14);--serif:"Times New Roman",Times,"Microsoft JhengHei","微軟正黑體","PingFang TC","Noto Sans TC",sans-serif}
-@media (prefers-color-scheme:dark){:root{--ink:236,233,225;--g:147,184,156;--bg:#1b1d1a;--card:#1b1d1a;--acx:#1b1d1a}}
+:root{--ink:45,45,42;--g:94,138,106;--bg:#f6f4ee;--card:#f6f4ee;--tx:rgb(var(--ink));--sub:rgba(var(--ink),.58);--ln:rgba(var(--ink),.22);--ac:rgb(var(--g));--ac2:rgba(var(--g),.55);--acx:#f6f4ee;--bad:rgb(var(--ink));--ok:rgb(var(--g));--warn:rgb(var(--ink));--chip:rgba(var(--g),.14);--white:#ffffff;--serif:"Times New Roman",Times,"Microsoft JhengHei","微軟正黑體","PingFang TC","Noto Sans TC",sans-serif}
+@media (prefers-color-scheme:dark){:root{--ink:236,233,225;--g:147,184,156;--bg:#1b1d1a;--card:#1b1d1a;--acx:#1b1d1a;--white:#262923}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:700 15px/1.75 "Times New Roman",Times,"Microsoft JhengHei","微軟正黑體","PingFang TC","Noto Sans TC",sans-serif;letter-spacing:.03em;-webkit-font-smoothing:antialiased}
 .wrap{max-width:640px;margin:0 auto;padding:12px 20px 64px}
@@ -90,6 +90,12 @@ tr.x td{opacity:.5}
 .chip.solid{background:var(--tx);color:var(--bg);border-color:var(--tx)}
 button.outline{background:transparent;color:var(--ac);border-color:var(--ac)}
 .card .bar{margin:16px 0 8px}
+.course.is-open,.card.is-open{background:var(--white)}
+.course.is-closed{background:transparent;border-top-color:var(--sub)}
+.course.is-closed .c-head h2,.course.is-closed .c-info dd{color:var(--sub)}
+.course.is-closed .c-seat b,.course.is-closed .c-no{color:var(--sub)}
+.course.is-closed .bar i{background:var(--sub)}
+.course.is-closed .lv{color:var(--sub);border-color:var(--ln)}
 body,body *{font-weight:700}
 input::placeholder{font-weight:700}
 </style>
@@ -159,7 +165,7 @@ function cardHtml(c, idx){
   const lv = c.levels.length ? c.levels.map(l => `<span class="lv">${esc(l)}</span>`).join("") : '<span class="lv">不限級別</span>';
   const btn = c.open ? `<button class="blk ${left > 0 ? "" : "outline"}" data-act="reg" data-id="${esc(c.id)}">${left > 0 ? "我要報名" : "登記候補"}</button>` : '<button class="blk ghost" disabled>已截止報名</button>';
   const row = (k, v) => `<div><dt>${k}</dt><dd>${v}</dd></div>`;
-  return `<article class="course">
+  return `<article class="course ${c.open ? "is-open" : "is-closed"}">
     <div class="c-top"><span class="c-no">COURSE ${String((idx || 0) + 1).padStart(2, "0")}</span>${st}</div>
     <div class="c-head"><h2>${esc(c.title)}</h2><div class="c-seat"><b>${left}</b><span>剩餘名額</span></div></div>
     <dl class="c-info">${row("日期", esc(c.when))}${row("地點", esc(c.place))}${c.deadline ? row("截止", esc(c.deadline)) : ""}${c.note ? row("備註", esc(c.note)) : ""}${row("對象", lv)}</dl>
@@ -224,7 +230,7 @@ function adminHtml(){
     const chip = c.open ? '<span class="chip ok">報名中</span>' : '<span class="chip bad">已截止</span>';
     const rows = c.regs.map((r, i) => `<tr class="${r.status === "已取消" ? "x" : ""}"><td>${esc(r.time)}</td><td>${esc(r.name)}</td><td>${esc(r.empId)}</td><td>${esc(r.level)}</td><td>${esc(r.status)}</td><td>${esc(r.cancelTime || "")}</td>
       <td>${r.status === "已取消" ? "" : `<a class="bad" style="cursor:pointer" data-act="cancelReg" data-id="${esc(c.id)}" data-emp="${esc(r.empId)}">取消</a>`}</td></tr>`).join("");
-    return `<div class="card"><div class="row"><h2>${esc(c.title)}</h2>${chip}</div>
+    return `<div class="card ${c.open ? "is-open" : "is-closed"}"><div class="row"><h2>${esc(c.title)}</h2>${chip}</div>
       <div class="meta" style="margin-top:6px">${esc(c.when)}・${esc(c.place)}</div>
       <div class="meta">對象：${c.levels.length ? esc(c.levels.join("、")) : "不限級別"}${c.deadline ? "・截止 " + esc(c.deadline) : ""}</div>
       <div class="meta"><b>正取 ${Math.min(act.length, c.cap)}／${c.cap}</b>${wait ? "・候補 " + wait : ""}</div>
