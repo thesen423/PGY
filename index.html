@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>臨床技能課程報名</title>
+<title>2026 臨床技能課程報名表｜奇美醫院教學部</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22none%22%20stroke%3D%22%235e8a6a%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M14%209v15a8%208%200%200%200%2016%200V9%22/%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%227%22%20r%3D%222%22/%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%227%22%20r%3D%222%22/%3E%3Cpath%20d%3D%22M22%2032v8a12%2012%200%200%200%2024%200v-6%22/%3E%3Ccircle%20cx%3D%2246%22%20cy%3D%2228%22%20r%3D%226%22/%3E%3Ccircle%20cx%3D%2246%22%20cy%3D%2228%22%20r%3D%221.8%22%20fill%3D%22%235e8a6a%22/%3E%3C/svg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
@@ -98,6 +98,14 @@ button.outline{background:transparent;color:var(--ac);border-color:var(--ac)}
 .course.is-closed .lv{color:var(--sub);border-color:var(--ln)}
 body,body *{font-weight:700}
 input::placeholder{font-weight:700}
+.credit{text-align:center;color:var(--sub);font-size:12px;letter-spacing:.24em;margin-top:40px}
+.credit+.foot{margin-top:14px}
+.yr{display:block;font-family:"Times New Roman",Times,serif;font-size:42px;line-height:1.05;color:var(--ac);letter-spacing:.04em;margin-bottom:2px}
+.cal{margin-top:18px;padding-top:14px;border-top:2px solid var(--ln);text-align:left}
+.cal-t{font-size:12px;color:var(--sub);letter-spacing:.18em}
+.btn-link{display:inline-block;border:2px solid var(--ac);color:var(--ac);background:transparent;border-radius:3px;padding:6px 14px;font-size:13px;letter-spacing:.1em;text-decoration:none}
+.contact{text-align:center;color:var(--sub);font-size:12px;letter-spacing:.16em;margin-top:6px}
+.mv{padding:6px 10px;letter-spacing:0}
 </style>
 </head>
 <body>
@@ -105,6 +113,50 @@ input::placeholder{font-weight:700}
 <div id="toast"></div>
 <div class="mask" id="mask" hidden><div class="sheet" id="sheet"></div></div>
 <script>
+const YEAR = 2026;
+const CONTACT = "教學部聯絡人　分機 #57427";
+function parseWhen(w){
+  const t = String(w || "");
+  const d = t.match(/(?:(\d{4})\s*[\/年.-]\s*)?(\d{1,2})\s*[\/月.-]\s*(\d{1,2})/);
+  const tm = t.match(/(\d{1,2}):(\d{2})\s*[–—~～\-至到]+\s*(\d{1,2}):(\d{2})/);
+  if (!d || !tm) return null;
+  const p = n => String(n).padStart(2, "0");
+  const day = (d[1] || YEAR) + p(d[2]) + p(d[3]);
+  return { start: day + "T" + p(tm[1]) + p(tm[2]) + "00", end: day + "T" + p(tm[3]) + p(tm[4]) + "00" };
+}
+const CAL_NOTE = "奇美醫院 教學部 臨床技能課程\n如有問題請洽" + CONTACT;
+function gcalUrl(c){
+  const t = parseWhen(c.when); if (!t) return "";
+  const q = new URLSearchParams({ action: "TEMPLATE", text: c.title + "（臨床技能課程）", dates: t.start + "/" + t.end, ctz: "Asia/Taipei", location: c.place || "", details: CAL_NOTE });
+  return "https://calendar.google.com/calendar/render?" + q.toString();
+}
+function calHtml(c){
+  const g = gcalUrl(c); if (!g) return "";
+  return `<div class="cal"><div class="cal-t">加入行事曆・課前提醒</div><div class="acts" style="margin-top:10px">
+    <a class="btn-link" href="${esc(g)}" target="_blank" rel="noopener">Google 日曆</a>
+    <button type="button" class="sm ghost" data-act="ics" data-t="${esc(c.title)}" data-w="${esc(c.when)}" data-p="${esc(c.place || "")}">iPhone／Outlook</button></div>
+    <div class="meta" style="margin-top:6px">iPhone／Outlook 檔案已設定課前一天與一小時提醒。</div></div>`;
+}
+function icsDownload(c){
+  const t = parseWhen(c.when); if (!t) return toast("無法辨識課程時間");
+  const e = v => String(v || "").replace(/[\\;,]/g, m => "\\" + m).replace(/\n/g, "\\n");
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+  const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//ChiMei//ClinicalSkills//ZH","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+    "BEGIN:VTIMEZONE","TZID:Asia/Taipei","BEGIN:STANDARD","DTSTART:19700101T000000","TZOFFSETFROM:+0800","TZOFFSETTO:+0800","TZNAME:CST","END:STANDARD","END:VTIMEZONE",
+    "BEGIN:VEVENT","UID:" + t.start + "-" + Math.random().toString(36).slice(2) + "@chimei-skills","DTSTAMP:" + stamp,
+    "DTSTART;TZID=Asia/Taipei:" + t.start,"DTEND;TZID=Asia/Taipei:" + t.end,
+    "SUMMARY:" + e(c.title + "（臨床技能課程）"),"LOCATION:" + e(c.place),"DESCRIPTION:" + e(CAL_NOTE),
+    "BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:" + e("明天有臨床技能課程：" + c.title),"END:VALARM",
+    "BEGIN:VALARM","TRIGGER:-PT1H","ACTION:DISPLAY","DESCRIPTION:" + e("課程一小時後開始：" + c.title),"END:VALARM",
+    "END:VEVENT","END:VCALENDAR"].join("\r\n");
+  try {
+    const link = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+    const el = document.createElement("a"); el.href = link; el.download = (c.title || "課程") + ".ics";
+    document.body.appendChild(el); el.click(); el.remove();
+    setTimeout(() => URL.revokeObjectURL(link), 3000);
+    toast("已下載行事曆檔，點開即可加入");
+  } catch (x) { toast("無法下載，請改用 Google 日曆"); }
+}
 const STETH = '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9v15a8 8 0 0 0 16 0V9"/><circle cx="14" cy="7" r="2"/><circle cx="30" cy="7" r="2"/><path d="M22 32v8a12 12 0 0 0 24 0v-6"/><circle cx="46" cy="28" r="6"/><circle cx="46" cy="28" r="1.8" fill="currentColor"/></svg>';
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -153,7 +205,7 @@ async function load(){
 function heroHtml(){
   const cs = S.courses || [], open = cs.filter(c => c.open);
   const seats = open.reduce((a, c) => a + Math.max(c.cap - c.count, 0), 0);
-  return `<div class="hero"><div class="mark">${STETH}</div><div class="en">Clinical Skills Training</div><h1>臨床技能課程報名</h1><p>自由報名・額滿後自動列入候補・可隨時取消</p>
+  return `<div class="hero"><div class="mark">${STETH}</div><div class="en">Chi Mei Medical Center</div><h1><span class="yr">${YEAR}</span>臨床技能課程報名表</h1><p style="color:var(--ac);letter-spacing:.2em">奇美醫院　教學部</p><p>自由報名・額滿自動候補・可隨時取消</p>
     <div class="pills"><span class="pill"><b>${open.length}</b>開放課程</span><span class="pill"><b>${seats}</b>剩餘名額</span></div></div>
     <div class="tabs"><button class="${S.view === "home" ? "on" : ""}" data-act="tab" data-v="home">課程報名</button><button class="${S.view === "mine" ? "on" : ""}" data-act="tab" data-v="mine">我的報名</button></div>`;
 }
@@ -177,7 +229,7 @@ function cardHtml(c, idx){
 function homeHtml(){
   if (S.courses === null) return '<div class="sk"></div><div class="sk"></div>';
   if (!S.courses.length) return '<div class="card meta">目前沒有課程，請稍後再來看看。</div>';
-  return S.courses.map(cardHtml).join("");
+  return S.courses.slice().sort((a, b) => (b.open ? 1 : 0) - (a.open ? 1 : 0)).map(cardHtml).join("");
 }
 
 function mineHtml(){
@@ -185,14 +237,14 @@ function mineHtml(){
     <button class="blk" data-act="lookup">查詢</button><div class="err" style="color:var(--sub)">${esc(S.mineMsg)}</div></div>`;
   if (S.mineList) out += S.mineList.map(x => `<div class="card"><div class="row"><div><h2>${esc(x.title)}</h2><div class="meta">${esc(x.when)}・${esc(x.name)}</div><div class="meta">報名時間：${esc(x.regTime || "")}</div></div>
     <span class="chip ${x.status === "正取" ? "ok" : "warn"}">${esc(x.status)}</span></div>
-    <button class="blk danger" data-act="cancelMine" data-id="${esc(x.courseId)}">取消這門課的報名</button></div>`).join("");
+    ${calHtml(x)}<button class="blk danger" data-act="cancelMine" data-id="${esc(x.courseId)}">取消這門課的報名</button></div>`).join("");
   return out;
 }
 
 function render(){
   const r = $("#root");
   if (S.view === "admin") { r.innerHTML = S.pw ? adminHtml() : loginHtml(); return; }
-  r.innerHTML = heroHtml() + (S.view === "home" ? homeHtml() : mineHtml()) + '<div class="foot"><a data-act="goAdmin">管理者登入</a></div>';
+  r.innerHTML = heroHtml() + (S.view === "home" ? homeHtml() : mineHtml()) + `<div class="credit">奇美醫院 教學部 編製</div><div class="contact">${esc(CONTACT)}</div><div class="foot"><a data-act="goAdmin">管理者登入</a></div>`;
 }
 
 function regForm(c, err){
@@ -203,6 +255,7 @@ function regForm(c, err){
     ${left === 0 ? '<div class="meta warn">目前已額滿，送出後會列入候補。</div>' : ""}
     <label>姓名</label><input name="name" required value="${esc(store.get("name"))}" autocomplete="name">
     <label>人事號</label><input name="empId" required value="${esc(store.get("emp"))}" autocomplete="off">
+    <label>簡碼</label><input name="code" required value="${esc(store.get("code"))}" autocomplete="off">
     <label>級別</label><select name="level">${opts}</select>
     <div class="err">${esc(err || "")}</div>
     <div class="acts"><button type="button" class="ghost" style="flex:1" data-act="closeSheet">取消</button><button type="submit" style="flex:2">送出報名</button></div></form>`);
@@ -224,21 +277,21 @@ function adminHtml(){
   if (!L.length) return h + '<div class="card meta">還沒有課程，按右上角「新增課程」開始。</div>';
   const total = L.reduce((a, c) => a + c.regs.filter(r => r.status !== "已取消").length, 0);
   h += `<div class="meta">共 ${L.length} 門課程・${total} 筆有效報名</div>`;
-  h += L.map(c => {
+  h += L.slice().sort((a, b) => (b.open ? 1 : 0) - (a.open ? 1 : 0)).map(c => {
     const act = c.regs.filter(r => r.status !== "已取消");
     const wait = Math.max(act.length - c.cap, 0);
     const chip = c.open ? '<span class="chip ok">報名中</span>' : '<span class="chip bad">已截止</span>';
-    const rows = c.regs.map((r, i) => `<tr class="${r.status === "已取消" ? "x" : ""}"><td>${esc(r.time)}</td><td>${esc(r.name)}</td><td>${esc(r.empId)}</td><td>${esc(r.level)}</td><td>${esc(r.status)}</td><td>${esc(r.cancelTime || "")}</td>
+    const rows = c.regs.map((r, i) => `<tr class="${r.status === "已取消" ? "x" : ""}"><td>${esc(r.time)}</td><td>${esc(r.name)}</td><td>${esc(r.empId)}</td><td>${esc(r.code || "")}</td><td>${esc(r.level)}</td><td>${esc(r.status)}</td><td>${esc(r.cancelTime || "")}</td>
       <td>${r.status === "已取消" ? "" : `<a class="bad" style="cursor:pointer" data-act="cancelReg" data-id="${esc(c.id)}" data-emp="${esc(r.empId)}">取消</a>`}</td></tr>`).join("");
     return `<div class="card ${c.open ? "is-open" : "is-closed"}"><div class="row"><h2>${esc(c.title)}</h2>${chip}</div>
       <div class="meta" style="margin-top:6px">${esc(c.when)}・${esc(c.place)}</div>
       <div class="meta">對象：${c.levels.length ? esc(c.levels.join("、")) : "不限級別"}${c.deadline ? "・截止 " + esc(c.deadline) : ""}</div>
       <div class="meta"><b>正取 ${Math.min(act.length, c.cap)}／${c.cap}</b>${wait ? "・候補 " + wait : ""}</div>
-      <div class="acts"><button class="sm" data-act="editCourse" data-id="${esc(c.id)}">編輯</button><button class="sm ghost" data-act="dupCourse" data-id="${esc(c.id)}">複製</button>
+      <div class="acts"><button class="sm" data-act="editCourse" data-id="${esc(c.id)}">編輯</button><button class="sm ghost" data-act="dupCourse" data-id="${esc(c.id)}">複製</button><button class="sm ghost mv" data-act="moveCourse" data-id="${esc(c.id)}" data-dir="-1" title="上移">↑ 上移</button><button class="sm ghost mv" data-act="moveCourse" data-id="${esc(c.id)}" data-dir="1" title="下移">↓ 下移</button>
       <button class="sm ghost" data-act="toggleCourse" data-id="${esc(c.id)}" data-open="${c.statusOpen ? "0" : "1"}">${c.statusOpen ? "手動截止" : "重新開放"}</button>
-      <button class="sm ghost" data-act="copyList" data-id="${esc(c.id)}">複製名單</button>
+      <button class="sm ghost" data-act="copyList" data-id="${esc(c.id)}">複製名單</button><button class="sm ghost" data-act="exportList" data-id="${esc(c.id)}">匯出名單</button>
       <button class="sm danger" data-act="delCourse" data-id="${esc(c.id)}">刪除</button></div>
-      <div class="scroll"><table><tr><th>報名時間</th><th>姓名</th><th>人事號</th><th>級別</th><th>狀態</th><th>取消時間</th><th></th></tr>${rows || '<tr><td colspan="7" class="meta">尚無人報名</td></tr>'}</table></div></div>`;
+      <div class="scroll"><table><tr><th>報名時間</th><th>姓名</th><th>人事號</th><th>簡碼</th><th>級別</th><th>狀態</th><th>取消時間</th><th></th></tr>${rows || '<tr><td colspan="8" class="meta">尚無人報名</td></tr>'}</table></div></div>`;
   }).join("");
   return h;
 }
@@ -266,6 +319,23 @@ function editor(c, err, dup){
     <div class="acts"><button type="button" class="ghost" style="flex:1" data-act="closeSheet">取消</button><button type="submit" style="flex:2">儲存</button></div></form>`);
 }
 
+function downloadCsv(c){
+  const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  const tx = v => q('="' + String(v == null ? "" : v).replace(/"/g, "") + '"');
+  const list = c.regs.filter(r => r.status !== "已取消").concat(c.regs.filter(r => r.status === "已取消"));
+  const head = ["序號","課程名稱","日期時間","地點","狀態","姓名","人事號","簡碼","級別","報名時間","取消時間"].map(q).join(",");
+  const body = list.map((r, i) => [q(i + 1), q(c.title), q(c.when), q(c.place), q(r.status), q(r.name), tx(r.empId), tx(r.code), q(r.level), q(r.timeFull || r.time), q(r.cancelFull || "")].join(","));
+  const csv = "\ufeff" + [head].concat(body).join("\r\n");
+  try {
+    const link = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const el = document.createElement("a");
+    el.href = link; el.download = (c.title || "課程") + "_報名名單.csv";
+    document.body.appendChild(el); el.click(); el.remove();
+    setTimeout(() => URL.revokeObjectURL(link), 3000);
+    toast("已匯出名單");
+  } catch (e) { toast("無法下載，請改用「複製名單」"); }
+}
+
 /* ---------- 事件 ---------- */
 document.addEventListener("input", e => { if (e.target.id === "qe") S.mineEmp = e.target.value; });
 $("#mask").addEventListener("click", e => { if (e.target.id === "mask" && !confirmRes) closeSheet(); });
@@ -275,6 +345,7 @@ document.addEventListener("click", async e => {
   const a = t.dataset.act, id = t.dataset.id;
   if (a === "cOk" || a === "cNo") { const r = confirmRes; confirmRes = null; closeSheet(); if (r) r(a === "cOk"); return; }
   if (a === "closeSheet") return closeSheet();
+  if (a === "ics") return icsDownload({ title: t.dataset.t, when: t.dataset.w, place: t.dataset.p });
   if (a === "tab") { S.view = t.dataset.v; render(); window.scrollTo(0, 0); return; }
   if (a === "goAdmin") { S.view = "admin"; render(); return; }
   if (a === "goHome") { S.view = "home"; render(); load(); return; }
@@ -302,6 +373,10 @@ document.addEventListener("click", async e => {
   if (a === "adminOut") { S.pw = ""; S.admin = null; S.view = "home"; render(); load(); return; }
   if (a === "newCourse") return editor();
   if (a === "editCourse") return editor(S.admin.find(x => x.id === id));
+  if (a === "moveCourse") {
+    try { const r = await run("adminMove", S.pw, id, Number(t.dataset.dir)); if (!r.moved) toast("已經在最前／最後"); } catch (x) { toast(em(x)); }
+    loadAdmin(); load(); return;
+  }
   if (a === "dupCourse") { const o = S.admin.find(x => x.id === id); return editor(Object.assign({}, o, { id: "", title: o.title + "（複製）", deadline: "", statusOpen: true, levels: o.levels.slice() }), "", true); }
   if (a === "toggleCourse") {
     try { await run("adminToggle", S.pw, id, t.dataset.open === "1"); toast("已更新"); } catch (x) { toast(em(x)); }
@@ -317,10 +392,11 @@ document.addEventListener("click", async e => {
     try { const r = await run("adminCancelReg", S.pw, id, t.dataset.emp); toast(r.ok ? "已取消" : r.msg); } catch (x) { toast(em(x)); }
     return loadAdmin();
   }
+  if (a === "exportList") return downloadCsv(S.admin.find(x => x.id === id));
   if (a === "copyList") {
     const c = S.admin.find(x => x.id === id);
-    const lines = c.regs.filter(r => r.status !== "已取消").map((r, i) => [i + 1, r.status, r.name, r.empId, r.level, r.time].join("\t"));
-    return copyText(["序號\t狀態\t姓名\t人事號\t級別\t報名時間"].concat(lines).join("\n"));
+    const lines = c.regs.filter(r => r.status !== "已取消").map((r, i) => [i + 1, r.status, r.name, r.empId, r.code || "", r.level, r.time].join("\t"));
+    return copyText(["序號\t狀態\t姓名\t人事號\t簡碼\t級別\t報名時間"].concat(lines).join("\n"));
   }
 });
 
@@ -332,17 +408,19 @@ document.addEventListener("submit", async e => {
 
   if (kind === "reg") {
     const c = S.courses.find(x => x.id === f.dataset.id);
-    const d = { courseId: c.id, name: String(fd.get("name")).trim(), empId: String(fd.get("empId")).trim(), level: fd.get("level") };
+    const d = { courseId: c.id, name: String(fd.get("name")).trim(), empId: String(fd.get("empId")).trim(), code: String(fd.get("code")).trim(), level: fd.get("level") };
     lock(true);
     try {
       const r = await run("register", d);
       if (!r.ok) { lock(false); err.textContent = r.msg; return; }
-      store.set("name", d.name); store.set("emp", d.empId); store.set("lv", d.level); S.mineEmp = d.empId;
+      store.set("name", d.name); store.set("emp", d.empId); store.set("code", d.code); store.set("lv", d.level); S.mineEmp = d.empId;
       const ok = r.status === "正取";
       sheet(`<div class="big"><div class="stamp ${ok ? "" : "w"}">${ok ? "正取" : "候補"}</div><h2>${ok ? "報名成功" : "已列入候補"}</h2>
         <div class="meta">${esc(c.title)}・${esc(d.name)}</div>
         <div class="${ok ? "ok" : "warn"}" style="margin-top:10px;font-weight:700">${ok ? "你是正取" : "候補第 " + (r.pos - r.cap) + " 位"}</div>
         <div class="meta" style="margin-top:10px">之後可到「我的報名」用人事號查詢或取消。</div>
+        ${calHtml(c)}
+        <div class="meta" style="margin-top:14px">如有問題請洽${esc(CONTACT)}</div>
         <button class="blk" data-act="closeSheet">完成</button></div>`);
       load();
     } catch (x) { lock(false); err.textContent = em(x); }
