@@ -3,29 +3,31 @@
 <head>
 <meta charset="utf-8">
 <title>臨床技能課程報名</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22none%22%20stroke%3D%22%235e8a6a%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M14%209v15a8%208%200%200%200%2016%200V9%22/%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%227%22%20r%3D%222%22/%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%227%22%20r%3D%222%22/%3E%3Cpath%20d%3D%22M22%2032v8a12%2012%200%200%200%2024%200v-6%22/%3E%3Ccircle%20cx%3D%2246%22%20cy%3D%2228%22%20r%3D%226%22/%3E%3Ccircle%20cx%3D%2246%22%20cy%3D%2228%22%20r%3D%221.8%22%20fill%3D%22%235e8a6a%22/%3E%3C/svg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-:root{--bg:#f6f4ee;--card:#fdfcf8;--tx:#2d2d2a;--sub:#7d7b73;--ln:#e3dfd4;--ac:#5e8a6a;--ac2:#b4cbb0;--acx:#fff;--bad:#b5543c;--ok:#5e8a6a;--warn:#a8823a;--chip:#edf2e8;--serif:"Microsoft JhengHei","微軟正黑體","PingFang TC","Noto Sans TC",-apple-system,BlinkMacSystemFont,sans-serif}
+:root{--bg:#f6f4ee;--card:#fdfcf8;--tx:#2d2d2a;--sub:#7d7b73;--ln:#e3dfd4;--ac:#5e8a6a;--ac2:#b4cbb0;--acx:#fff;--bad:#b5543c;--ok:#5e8a6a;--warn:#a8823a;--chip:#edf2e8;--serif:"Times New Roman",Times,"Microsoft JhengHei","微軟正黑體","PingFang TC","Noto Sans TC",sans-serif}
 @media (prefers-color-scheme:dark){:root{--bg:#1a1c19;--card:#21241f;--tx:#e6e4dc;--sub:#9c9a90;--ln:#353a31;--ac:#93b89c;--ac2:#4d6a55;--acx:#15211a;--bad:#d98a74;--ok:#93b89c;--warn:#d1ad66;--chip:#283027}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.75 "Microsoft JhengHei","微軟正黑體","PingFang TC","Noto Sans TC",-apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:.03em;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--tx);font:700 15px/1.75 "Times New Roman",Times,"Microsoft JhengHei","微軟正黑體","PingFang TC","Noto Sans TC",sans-serif;letter-spacing:.03em;-webkit-font-smoothing:antialiased}
 .wrap{max-width:640px;margin:0 auto;padding:12px 20px 64px}
 .hero{position:relative;padding:34px 2px 22px;border-bottom:1px solid var(--ln)}
-.hero::after{content:"";position:absolute;right:4px;top:30px;width:58px;height:58px;border-radius:50%;border:1px solid var(--ac2)}
-.hero::before{content:"";position:absolute;right:26px;top:52px;width:14px;height:14px;border-radius:50%;background:var(--ac)}
+.mark{position:absolute;right:2px;top:28px;width:66px;height:66px;border:1px solid var(--ac2);border-radius:50%;padding:13px;color:var(--ac)}
+.mark svg{width:100%;height:100%;display:block}
+.ttl svg{width:22px;height:22px;vertical-align:-4px;margin-right:8px;color:var(--ac)}
 .hero .en{font-size:11px;letter-spacing:.32em;color:var(--ac);text-transform:uppercase}
-.hero h1{font-family:var(--serif);font-weight:600;font-size:26px;letter-spacing:.14em;margin:8px 0 6px;color:var(--tx)}
+.hero h1{font-family:var(--serif);font-weight:700;font-size:26px;letter-spacing:.14em;margin:8px 0 6px;color:var(--tx)}
 .hero p{margin:0;color:var(--sub);font-size:13px;letter-spacing:.08em}
 .pills{display:flex;gap:36px;margin-top:22px}
 .pill{display:flex;flex-direction:column;font-size:11px;color:var(--sub);letter-spacing:.2em}
-.pill b{font-family:var(--serif);font-size:26px;font-weight:500;color:var(--ac);letter-spacing:0;line-height:1.2}
+.pill b{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--ac);letter-spacing:0;line-height:1.2}
 .tabs{display:flex;gap:30px;border-bottom:1px solid var(--ln);margin:0 0 8px;position:sticky;top:0;background:var(--bg);z-index:5}
-.tabs button{flex:none;background:none;color:var(--sub);border:0;border-radius:0;padding:16px 2px 12px;font-weight:500;letter-spacing:.16em;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button{flex:none;background:none;color:var(--sub);border:0;border-radius:0;padding:16px 2px 12px;font-weight:700;letter-spacing:.16em;border-bottom:2px solid transparent;margin-bottom:-1px}
 .tabs button.on{color:var(--tx);border-bottom-color:var(--ac)}
 .card{background:var(--card);border:1px solid var(--ln);border-radius:4px;padding:22px 20px;margin:16px 0}
 .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-h2{font-family:var(--serif);font-size:19px;font-weight:600;margin:0;letter-spacing:.08em}
-h3{font-family:var(--serif);font-size:17px;font-weight:600;margin:0 0 10px;letter-spacing:.08em}
+h2{font-family:var(--serif);font-size:19px;font-weight:700;margin:0;letter-spacing:.08em}
+h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:0 0 10px;letter-spacing:.08em}
 .meta{font-size:13px;color:var(--sub);margin:4px 0}
 .dl{display:grid;grid-template-columns:3.6em 1fr;gap:6px 12px;font-size:14px;margin:16px 0 4px}
 .dl dt{color:var(--sub);font-size:12px;letter-spacing:.2em;padding-top:2px}
@@ -37,7 +39,7 @@ h3{font-family:var(--serif);font-size:17px;font-weight:600;margin:0 0 10px;lette
 .bar i{display:block;height:100%;background:var(--ac)}
 .bar.full i{background:var(--warn)}
 .cnt{font-size:12px;color:var(--sub);display:flex;justify-content:space-between;letter-spacing:.1em}
-button{font:inherit;border:1px solid var(--ac);border-radius:3px;padding:12px 18px;background:var(--ac);color:var(--acx);cursor:pointer;font-weight:500;letter-spacing:.18em;transition:opacity .15s}
+button{font:inherit;border:1px solid var(--ac);border-radius:3px;padding:12px 18px;background:var(--ac);color:var(--acx);cursor:pointer;font-weight:700;letter-spacing:.18em;transition:opacity .15s}
 button:hover{opacity:.88}button:disabled{opacity:.45;cursor:default}
 .blk{width:100%;margin-top:18px}
 .ghost{background:transparent;color:var(--tx);border-color:var(--ln)}
@@ -55,7 +57,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-bottom-color:var(--a
 @keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
 @media (min-width:600px){.mask{align-items:center}.sheet{border-radius:6px}}
 .big{text-align:center;padding:14px 0 4px}.big h2{margin:18px 0 6px}
-.stamp{display:inline-block;border:2px solid var(--ac);color:var(--ac);font-family:var(--serif);font-size:22px;font-weight:600;padding:8px 16px;letter-spacing:.3em;border-radius:4px;transform:rotate(-5deg)}
+.stamp{display:inline-block;border:2px solid var(--ac);color:var(--ac);font-family:var(--serif);font-size:22px;font-weight:700;padding:8px 16px;letter-spacing:.3em;border-radius:4px;transform:rotate(-5deg)}
 .stamp.w{border-color:var(--warn);color:var(--warn)}
 #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 20px;border-radius:2px;font-size:13px;letter-spacing:.1em;z-index:99;opacity:0;pointer-events:none;transition:.25s;max-width:90vw}
 #toast.show{opacity:1}
@@ -63,7 +65,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-bottom-color:var(--a
 @keyframes sh{to{background-position:-200% 0}}
 .scroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px;margin-top:14px}
-th{font-weight:500;color:var(--sub);font-size:11px;letter-spacing:.16em}
+th{font-weight:700;color:var(--sub);font-size:11px;letter-spacing:.16em}
 th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--ln);white-space:nowrap}
 tr.x td{opacity:.5}
 .foot{text-align:center;margin-top:40px}.foot a{color:var(--sub);font-size:12px;letter-spacing:.16em;cursor:pointer;border-bottom:1px solid var(--ln);padding-bottom:2px}
@@ -77,6 +79,7 @@ tr.x td{opacity:.5}
 <div id="toast"></div>
 <div class="mask" id="mask" hidden><div class="sheet" id="sheet"></div></div>
 <script>
+const STETH = '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9v15a8 8 0 0 0 16 0V9"/><circle cx="14" cy="7" r="2"/><circle cx="30" cy="7" r="2"/><path d="M22 32v8a12 12 0 0 0 24 0v-6"/><circle cx="46" cy="28" r="6"/><circle cx="46" cy="28" r="1.8" fill="currentColor"/></svg>';
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const API_URL = "https://script.google.com/macros/s/AKfycbx6Y0ZzTe9gwz-06J-zg-qINysUClwRtzvBH8gOeR-BHfaCTv074Cr2gzzvlL3a4zE/exec";
@@ -124,7 +127,7 @@ async function load(){
 function heroHtml(){
   const cs = S.courses || [], open = cs.filter(c => c.open);
   const seats = open.reduce((a, c) => a + Math.max(c.cap - c.count, 0), 0);
-  return `<div class="hero"><div class="en">Clinical Skills Training</div><h1>臨床技能課程報名</h1><p>自由報名・額滿後自動列入候補・可隨時取消</p>
+  return `<div class="hero"><div class="mark">${STETH}</div><div class="en">Clinical Skills Training</div><h1>臨床技能課程報名</h1><p>自由報名・額滿後自動列入候補・可隨時取消</p>
     <div class="pills"><span class="pill"><b>${open.length}</b>開放課程</span><span class="pill"><b>${seats}</b>剩餘名額</span></div></div>
     <div class="tabs"><button class="${S.view === "home" ? "on" : ""}" data-act="tab" data-v="home">課程報名</button><button class="${S.view === "mine" ? "on" : ""}" data-act="tab" data-v="mine">我的報名</button></div>`;
 }
@@ -180,7 +183,7 @@ function regForm(c, err){
 
 /* ---------- 管理端 ---------- */
 function loginHtml(){
-  return `<div class="hero"><div class="en">Administrator</div><h1>管理後台</h1><p>請輸入管理密碼</p></div>
+  return `<div class="hero"><div class="mark">${STETH}</div><div class="en">Administrator</div><h1>管理後台</h1><p>請輸入管理密碼</p></div>
     <form class="card" data-form="login"><label>管理密碼</label><input type="password" name="pw" required autocomplete="current-password">
     <div class="err"></div><button class="blk" type="submit">登入</button>
     <button class="blk ghost" type="button" data-act="goHome">← 回報名頁</button></form>`;
