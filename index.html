@@ -81,7 +81,7 @@ tr.x td{opacity:.5}
 .c-seat b{display:block;font-family:"Times New Roman",Times,serif;font-size:40px;line-height:1;color:var(--ac)}
 .c-seat span{font-size:11px;letter-spacing:.22em;color:var(--sub)}
 .c-info{margin:18px 0 0;border-top:2px solid var(--ln)}
-.c-info div{display:grid;grid-template-columns:4.4em 1fr;padding:11px 0;border-bottom:2px solid var(--ln);font-size:14px}
+.c-info div{display:grid;grid-template-columns:5.2em 1fr;padding:11px 0;border-bottom:2px solid var(--ln);font-size:14px}
 .c-info dt{color:var(--sub);font-size:12px;letter-spacing:.26em;padding-top:2px}
 .c-info dd{margin:0}
 .c-prog{margin-top:22px}
@@ -220,7 +220,7 @@ function cardHtml(c, idx){
   return `<article class="course ${c.open ? "is-open" : "is-closed"}">
     <div class="c-top"><span class="c-no">COURSE ${String((idx || 0) + 1).padStart(2, "0")}</span>${st}</div>
     <div class="c-head"><h2>${esc(c.title)}</h2><div class="c-seat"><b>${left}</b><span>剩餘名額</span></div></div>
-    <dl class="c-info">${row("日期", esc(c.when))}${row("地點", esc(c.place))}${c.deadline ? row("截止", esc(c.deadline)) : ""}${c.note ? row("備註", esc(c.note)) : ""}${row("對象", lv)}</dl>
+    <dl class="c-info">${row("日期", esc(c.when))}${row("地點", esc(c.place))}${c.note ? row("備註", esc(c.note)) : ""}${row("對象", lv)}${c.deadline ? row("報名截止", esc(c.deadline)) : ""}</dl>
     <div class="c-prog"><div class="c-prog-t"><span>報名進度</span><span><b>${Math.min(c.count, c.cap)}</b> / ${c.cap}${wait ? "・候補 " + wait : ""}</span></div>
     <div class="bar"><i style="width:${pct}%"></i></div></div>
     ${btn}</article>`;
@@ -312,8 +312,8 @@ function editor(c, err, dup){
     <div class="grid2"><div><label>名額</label><input name="cap" type="number" min="1" required value="${esc(c.cap)}"></div>
     <div><label>狀態</label><select name="open"><option value="1" ${c.statusOpen ? "selected" : ""}>開放報名</option><option value="0" ${c.statusOpen ? "" : "selected"}>手動截止</option></select></div></div>
     <label>限定級別（都不勾＝不限）</label><div class="row" style="justify-content:flex-start;gap:18px">${lv}</div>
-    <label>報名截止時間（選填，到時自動截止）</label><input name="deadline" type="datetime-local" value="${esc((c.deadline || "").replace(" ", "T"))}">
     <label>備註（選填）</label><input name="note" value="${esc(c.note)}">
+    <label>報名截止時間（選填，到時自動截止）</label><input name="deadline" type="datetime-local" value="${esc((c.deadline || "").replace(" ", "T"))}">
     ${c.id ? '<div class="meta" style="margin-top:10px">提醒：修改名額後，正取／候補會依報名時間自動重新計算。</div>' : ""}
     <div class="err">${esc(err || "")}</div>
     <div class="acts"><button type="button" class="ghost" style="flex:1" data-act="closeSheet">取消</button><button type="submit" style="flex:2">儲存</button></div></form>`);
