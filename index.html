@@ -249,7 +249,7 @@ function render(){
 
 function regForm(c, err){
   const left = Math.max(c.cap - c.count, 0);
-  const opts = ["PGY2", "PGY1"].map(l => `<option ${l === (store.get("lv") || "PGY2") ? "selected" : ""}>${l}</option>`).join("");
+  const opts = ["PGY2", "PGY1", "UGY"].map(l => `<option ${l === (store.get("lv") || "PGY2") ? "selected" : ""}>${l}</option>`).join("");
   sheet(`<form data-form="reg" data-id="${esc(c.id)}"><h3>${esc(c.title)}</h3>
     <div class="meta">${esc(c.when)}・${esc(c.place)}</div>
     ${left === 0 ? '<div class="meta warn">目前已額滿，送出後會列入候補。</div>' : ""}
@@ -304,7 +304,7 @@ async function loadAdmin(){
 
 function editor(c, err, dup){
   c = c || { id: "", title: "", when: "", place: "", cap: 6, levels: ["PGY2"], note: "", deadline: "", statusOpen: true };
-  const lv = ["PGY2", "PGY1"].map(l => `<label class="chk"><input type="checkbox" name="lv" value="${l}" ${c.levels.indexOf(l) >= 0 ? "checked" : ""}>${l}</label>`).join("");
+  const lv = ["PGY2", "PGY1", "UGY"].map(l => `<label class="chk"><input type="checkbox" name="lv" value="${l}" ${c.levels.indexOf(l) >= 0 ? "checked" : ""}>${l}</label>`).join("");
   sheet(`<form data-form="course"><h3>${c.id ? "編輯課程" : dup ? "複製課程" : "新增課程"}</h3>${dup ? '<div class="meta">已帶入原課程內容，請修改日期、地點等資訊後儲存，會建立成一門新課程。</div>' : ""}<input type="hidden" name="id" value="${esc(c.id)}">
     <label>課程名稱</label><input name="title" required value="${esc(c.title)}">
     <label>日期時間（例：10/14（三）13:00–14:00）</label><input name="when" required value="${esc(c.when)}">
