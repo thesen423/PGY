@@ -3,6 +3,6 @@
  * 留空＝管理頁只存在本機瀏覽器，查詢頁無法使用。
  */
 window.PGY_CONFIG = {
-  api: "",
+  api: "https://script.google.com/macros/s/AKfycbyfIld7w6RuHER6Jmyyr5ufuaMoFk7BXRgdyMbKIpC19m68W57Ckg7zKcNoRmMDrBZ0/exec",
   contact: "教學部聯絡人　分機 #57427"
 };
