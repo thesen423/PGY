@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>臨床技能課程安排表｜奇美醫院教學部</title>
+<base target="_top">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --main:#3f6f4c; --main2:#5e8a6a; --ink:#1f2937; --mut:#6b7280;
+    --line:#e3e6e1; --bg:#f4f5f1; --head:#eef2ec;
+    --green:#2e9e5b; --greenbg:#e2efda; --red:#c0392b; --redbg:#fde9e9;
+    --amber:#b97500; --amberbg:#fff3d6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Microsoft JhengHei","微軟正黑體","PingFang TC","Noto Sans TC","Segoe UI",Arial,sans-serif;
+       background:var(--bg);color:var(--ink);font-size:16px}
+  header{background:linear-gradient(100deg,var(--main),var(--main2));color:#fff;
+         padding:22px 20px;box-shadow:0 2px 8px rgba(0,0,0,.12);text-align:center}
+  header h1{margin:0;font-size:28px;font-weight:800;letter-spacing:2px}
+  header .sub{opacity:.9;font-size:13px;margin-top:6px}
+  nav{display:flex;gap:2px;background:#fff;padding:0 12px;border-bottom:1px solid var(--line);
+      position:sticky;top:0;z-index:20;overflow-x:auto}
+  nav .in{display:flex;gap:2px;margin:0 auto}
+  nav button{border:0;background:none;padding:15px 16px;font-size:15px;color:var(--mut);
+             cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit}
+  nav button.active{color:var(--main);border-bottom-color:var(--main);font-weight:700}
+  main{padding:22px 16px;max-width:1180px;margin:0 auto}
+  .tab{display:none} .tab.active{display:block}
+  .banner{background:var(--amberbg);border:1px solid #f0d9a0;color:#7a5200;border-radius:10px;
+          padding:10px 14px;margin-bottom:16px;font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .card .k{font-size:14px;color:var(--mut)} .card .v{font-size:30px;font-weight:800;color:var(--main);margin-top:4px}
+  .card .v small{font-size:15px;color:var(--mut);font-weight:500}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:20px}
+  .panel h2{margin:0 0 14px;font-size:18px;color:var(--main)}
+  .prow{display:flex;align-items:center;gap:12px;margin:11px 0}
+  .prow .name{width:170px;font-weight:600;flex-shrink:0;font-size:15px}
+  .prow .meta{width:90px;font-size:13px;color:var(--mut);flex-shrink:0}
+  .bar{flex:1;height:22px;background:#edf0ea;border-radius:11px;overflow:hidden;position:relative;min-width:80px}
+  .bar>span{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--main2),var(--green));border-radius:11px;transition:width .5s}
+  .bar em{position:absolute;right:8px;top:0;line-height:22px;font-size:12px;color:#333;font-style:normal;font-weight:700}
+  .tw{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:center;white-space:nowrap}
+  th{background:var(--head);color:var(--main);font-weight:700}
+  td.name{text-align:left;font-weight:600}
+  td.l{text-align:left;white-space:normal}
+  .yes{color:var(--green);font-weight:800}.no{color:var(--red);font-weight:800}
+  td.yes-c{background:var(--greenbg)}td.no-c{background:var(--redbg)}td.sch-c{background:var(--amberbg)}
+  .chip{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;color:#fff;font-weight:700}
+  .tag{display:inline-block;padding:1px 8px;border-radius:4px;font-size:12px;border:1px solid var(--line);color:var(--mut);margin-left:4px}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+  select,input[type=text]{padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;background:#fff}
+  .muted{color:var(--mut);font-size:13px}
+  .btn{background:var(--main);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:600}
+  .btn.ghost,.cpbtn{background:#e9efe7;color:var(--main);border:1px solid #cfdccc}
+  .cpbtn{border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600}
+  .btn:hover,.cpbtn:hover{filter:brightness(.96)}
+  .gbtn{background:var(--main);color:#fff;border:0;width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:18px;font-weight:700;line-height:1}
+  .gbtn.ghost{background:#e9efe7;color:var(--main)}
+  .gantt-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;cursor:grab;user-select:none}
+  .gantt-wrap.drag{cursor:grabbing}
+  .gantt{position:relative;width:900px}
+  .g-head{display:flex;border-bottom:1px solid var(--line);position:relative;height:32px}
+  .g-row{display:flex;align-items:center;border-bottom:1px dashed #e8ece6;height:48px;position:relative}
+  .g-label{width:160px;flex-shrink:0;padding-left:12px;font-weight:600;font-size:14px;background:#fafbf9;height:100%;
+           display:flex;align-items:center;border-right:1px solid var(--line);position:sticky;left:0;z-index:3}
+  .g-track{position:relative;flex:1;height:100%}
+  .g-month{position:absolute;top:0;font-size:12px;color:var(--mut);border-left:1px solid #e8ece6;height:100%;padding-left:4px}
+  .g-mark{position:absolute;top:13px;height:22px;border-radius:6px;color:#fff;font-size:11px;display:flex;align-items:center;
+          justify-content:center;padding:0 6px;white-space:nowrap;transform:translateX(-2px);cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .g-mark:hover{outline:2px solid #111}
+  .g-today{position:absolute;top:0;bottom:0;width:2px;background:var(--red);z-index:5}
+  .g-today b{position:absolute;top:-2px;left:3px;color:var(--red);font-size:11px;font-weight:700;white-space:nowrap}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0;font-size:13px;align-items:center}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .dot{width:13px;height:13px;border-radius:3px;display:inline-block}
+  .loading{padding:60px;text-align:center;color:var(--mut)}
+  .heat0{background:#f8f9f7;color:#c7cdd6}.heat1{background:#dcebd8}.heat2{background:#b6d6ae}.heat3{background:#7fb571;color:#fff}
+  .sess-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px}
+  .sess-meta{font-size:14px;color:var(--mut);margin-bottom:12px;line-height:1.8}
+  .ins{background:#17a2a2;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;margin-left:4px}
+  .drop{border:2px dashed #b9c9b4;border-radius:12px;padding:30px 16px;text-align:center;background:#fafcf9;cursor:pointer}
+  .drop.over{background:#eef6eb;border-color:var(--main)}
+  .ok-l{color:var(--green)}.bad-l{color:var(--red)}
+  ul.chk{margin:6px 0 0;padding-left:20px;font-size:14px;line-height:1.9}
+  code{background:#eef1ec;padding:1px 6px;border-radius:4px;font-size:13px}
+  .up li{margin:6px 0}
+  @media (max-width:640px){
+    header h1{font-size:22px}
+    .prow{flex-wrap:wrap}.prow .name{width:100%}.prow .meta{width:auto}
+    .g-label{width:110px;font-size:12px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>臨床技能課程安排表</h1>
+  <div class="sub">奇美醫院 教學部｜<span id="gen">載入中…</span></div>
+</header>
+<nav><div class="in" id="nav">
+  <button data-t="ov" class="active">總覽</button>
+  <button data-t="gantt">甘特圖</button>
+  <button data-t="ses">課程場次</button>
+  <button data-t="fac">師資一覽</button>
+  <button data-t="stu">學員課表</button>
+  <button data-t="fb">課程回饋</button>
+  <button data-t="all">年度總表</button>
+  <button data-t="imp">匯入資料</button>
+</div></nav>
+<main>
+  <div id="banner"></div>
+  <div id="ov" class="tab active"><div class="loading">載入中…</div></div>
+  <div id="gantt" class="tab"></div>
+  <div id="ses" class="tab"></div>
+  <div id="fac" class="tab"></div>
+  <div id="stu" class="tab"></div>
+  <div id="fb" class="tab"></div>
+  <div id="all" class="tab"></div>
+  <div id="imp" class="tab"></div>
+</main>
+
+<script>
+/* =====================================================================
+   資料來源（依序嘗試）
+   1. 本機匯入：在「匯入資料」分頁上傳的 Excel／CSV（只存在這台電腦的瀏覽器）
+   2. GAS_URL：Google 試算表 + Apps Script（見 gas/Code.gs），所有人看到同一份
+   3. DATA_FILE：與本頁放在同一資料夾的 Excel 檔（上傳到 GitHub 即可更新）
+   4. 都沒有時顯示範例資料
+   ===================================================================== */
+const GAS_URL = "";                 /* 例："https://script.google.com/macros/s/xxxx/exec" */
+const DATA_FILE = "data.xlsx";      /* 不使用請改成 "" */
+const LS_KEY = "pgy_skill_schedule_import_v1";
+
+/* ---------- 試算表欄位對照（可接受的欄位名稱） ---------- */
+const SHEETS = {
+  courses:  ["課程清單","課程列表","課程項目","課程"],
+  sessions: ["課程場次","場次","排課","課程安排","課表"],
+  students: ["學員名單","學員","學員課表","學員資料"],
+  enroll:   ["選課紀錄","報名紀錄","報名名單","選課"],
+  faculty:  ["師資","師資名單","師資一覽","教師"],
+  feedback: ["課程回饋","回饋"]
+};
+const COLS = {
+  course:  ["課程名稱","課程","課程項目","技能項目","項目"],
+  cat:     ["類別","分類","課程類別"],
+  hours:   ["時數","課程時數"],
+  req:     ["必修","必選修","必修/選修"],
+  batch:   ["梯次","梯","組別"],
+  no:      ["場次","場次編號","第幾場"],
+  date:    ["日期","上課日期","課程日期"],
+  time:    ["時間","上課時間","時段"],
+  place:   ["地點","教室","上課地點"],
+  teacher: ["教師","負責教師","講師","授課教師","主講"],
+  teacher2:["教師2","協同教師","助教","副講"],
+  cap:     ["名額","人數上限","容量"],
+  target:  ["對象","級別限制","適用對象"],
+  confirmed:["教師確認","確認","已確認","確認狀態"],
+  confirmTime:["確認時間","確認日期"],
+  note:    ["備註","說明"],
+  id:      ["員編","人事號","員工編號","職編","學號"],
+  name:    ["姓名","學員","學員姓名","名字"],
+  level:   ["級別","職級","身分","年級"],
+  phone:   ["分機","電話","聯絡電話","手機"],
+  dept:    ["科別","科部","單位"],
+  title:   ["職稱"],
+  fcourses:["負責課程","授課課程","專長課程"],
+  student: ["學員","姓名","填寫者"]
+};
+const BATCH_COLORS = ["#4472C4","#2e9e5b","#d98800","#9b59b6","#17a2a2","#c0392b","#7f8c8d","#e67e22"];
+
+let DATA = null, GZOOM = 1, SOURCE = "";
+const COPY = [];
+const $ = s => document.querySelector(s);
+const esc = t => String(t == null ? "" : t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+const store = {
+  get(){ try { return localStorage.getItem(LS_KEY); } catch (e) { return null; } },
+  set(v){ try { localStorage.setItem(LS_KEY, v); return true; } catch (e) { return false; } },
+  del(){ try { localStorage.removeItem(LS_KEY); } catch (e) {} }
+};
+function colorOf(b){ const i = (DATA && DATA.batches || []).indexOf(b); return i < 0 ? "#888" : BATCH_COLORS[i % BATCH_COLORS.length]; }
+function chip(b, txt){ return b ? `<span class="chip" style="background:${colorOf(b)}">${esc(txt || b + "梯")}</span>` : '<span class="muted">—</span>'; }
+
+/* ---------- 分頁切換 ---------- */
+document.querySelectorAll("#nav button").forEach(b => b.onclick = () => showTab(b.dataset.t));
+function showTab(t){
+  document.querySelectorAll("#nav button").forEach(x => x.classList.toggle("active", x.dataset.t === t));
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x.id === t));
+  if (t === "gantt" && DATA) renderGantt();
+}
+
+/* =====================================================================
+   解析：把「試算表各分頁的二維陣列」轉成儀表板資料
+   ===================================================================== */
+const norm = s => String(s == null ? "" : s).replace(/[\s　]/g, "").replace(/（/g, "(").replace(/）/g, ")");
+function findSheet(book, key){
+  const names = Object.keys(book);
+  for (const want of SHEETS[key]) { const n = names.find(x => norm(x) === norm(want)); if (n) return book[n]; }
+  for (const want of SHEETS[key]) { const n = names.find(x => norm(x).indexOf(norm(want)) >= 0); if (n) return book[n]; }
+  return null;
+}
+/* 找表頭列（前 6 列中，含最多已知欄名的那一列），回傳 {head, rows} */
+function table(rows, mustKeys){
+  if (!rows || !rows.length) return null;
+  let best = -1, bestScore = 0;
+  for (let i = 0; i < Math.min(6, rows.length); i++) {
+    const cells = rows[i].map(norm);
+    let sc = 0;
+    Object.keys(COLS).forEach(k => { if (COLS[k].some(a => cells.indexOf(norm(a)) >= 0)) sc++; });
+    if (mustKeys.every(k => COLS[k].some(a => cells.indexOf(norm(a)) >= 0)) && sc > bestScore) { best = i; bestScore = sc; }
+  }
+  if (best < 0) return null;
+  const head = rows[best].map(norm);
+  const body = rows.slice(best + 1).filter(r => r.some(c => String(c == null ? "" : c).trim() !== ""));
+  return { head, body };
+}
+function colIdx(head, key, used){
+  for (const a of COLS[key]) { const i = head.indexOf(norm(a)); if (i >= 0 && !(used && used.has(i))) { if (used) used.add(i); return i; } }
+  return -1;
+}
+const cell = (r, i) => i < 0 ? "" : String(r[i] == null ? "" : r[i]).trim();
+
+/* 日期：支援 2026-03-05、2026/3/5、115/3/5（民國）、3/5、Excel 序號、Date 物件 */
+function toDate(v){
+  if (v == null || v === "") return "";
+  if (v instanceof Date && !isNaN(v)) return ymd(v);
+  const s = String(v).trim();
+  if (/^\d{5}(\.\d+)?$/.test(s)) { const d = new Date(Math.round((Number(s) - 25569) * 86400000)); return ymd(new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())); }
+  let m = s.match(/(\d{2,4})\s*[\/年.\-]\s*(\d{1,2})\s*[\/月.\-]\s*(\d{1,2})/);
+  if (m) { let y = Number(m[1]); if (y < 1911) y += 1911; return y + "-" + pad(m[2]) + "-" + pad(m[3]); }
+  m = s.match(/^(\d{1,2})\s*[\/月.\-]\s*(\d{1,2})/);
+  if (m) return new Date().getFullYear() + "-" + pad(m[1]) + "-" + pad(m[2]);
+  return "";
+}
+const truthy = v => /^(是|y|yes|v|✔|✓|o|ok|true|1|已確認|確認)$/i.test(String(v).trim());
+const DONE_WORDS = /^(已完成|完成|已上課|v|✔|✓|o|ok|pass|通過)$/i;
+function splitList(v){ return String(v || "").split(/[、,，\/;；\s]+/).map(x => x.trim()).filter(Boolean); }
+
+function buildData(book, meta){
+  const warn = [];
+  const today = ymd(new Date());
+
+  /* 課程清單（可選） */
+  let courses = [], courseInfo = {};
+  const tc = table(findSheet(book, "courses"), ["course"]);
+  if (tc) {
+    const iC = colIdx(tc.head, "course"), iCat = colIdx(tc.head, "cat"), iH = colIdx(tc.head, "hours"), iR = colIdx(tc.head, "req"), iN = colIdx(tc.head, "note");
+    tc.body.forEach(r => { const c = cell(r, iC); if (!c || courseInfo[c]) return; courses.push(c);
+      courseInfo[c] = { cat: cell(r, iCat), hours: cell(r, iH), req: cell(r, iR), note: cell(r, iN) }; });
+  }
+
+  /* 課程場次（必要） */
+  const sessions = [];
+  const ts = table(findSheet(book, "sessions"), ["course"]);
+  if (!ts) warn.push("找不到「課程場次」分頁或其中沒有「課程名稱」欄。");
+  else {
+    const used = new Set();
+    const ix = {};
+    ["course","batch","no","date","time","place","teacher","teacher2","cap","target","confirmed","confirmTime","note"].forEach(k => ix[k] = colIdx(ts.head, k, used));
+    const counter = {};
+    ts.body.forEach(r => {
+      const c = cell(r, ix.course); if (!c) return;
+      const batch = cell(r, ix.batch).replace(/梯$/, "").toUpperCase();
+      const key = c + "|" + batch;
+      counter[key] = (counter[key] || 0) + 1;
+      const no = Number(String(cell(r, ix.no)).replace(/\D/g, "")) || counter[key];
+      sessions.push({ course: c, batch, no, date: toDate(ix.date < 0 ? "" : r[ix.date]), time: cell(r, ix.time), place: cell(r, ix.place),
+        teacher: cell(r, ix.teacher), teacher2: cell(r, ix.teacher2), cap: Number(cell(r, ix.cap)) || 0, target: cell(r, ix.target),
+        confirmed: truthy(cell(r, ix.confirmed)), confirmTime: cell(r, ix.confirmTime), note: cell(r, ix.note) });
+      if (!courseInfo[c]) { courseInfo[c] = {}; courses.push(c); }
+    });
+    if (ix.date < 0) warn.push("「課程場次」沒有「日期」欄，甘特圖與完成判斷將無法使用。");
+  }
+
+  /* 學員名單（寬表：課程名稱當欄名，內容填 A梯場次1／場次2／日期／已完成） */
+  const students = [], stuById = {};
+  const tst = table(findSheet(book, "students"), ["name"]);
+  if (tst) {
+    const used = new Set();
+    const ix = {}; ["id","name","batch","level","phone","note"].forEach(k => ix[k] = colIdx(tst.head, k, used));
+    const courseCols = [];
+    tst.head.forEach((h, i) => { if (used.has(i) || !h) return; const c = courses.find(x => norm(x) === h); if (c) courseCols.push([i, c]); });
+    tst.body.forEach(r => {
+      const name = cell(r, ix.name); if (!name) return;
+      const st = { id: cell(r, ix.id), name, batch: cell(r, ix.batch).replace(/梯$/, "").toUpperCase(), level: cell(r, ix.level), phone: cell(r, ix.phone), note: cell(r, ix.note), completion: {} };
+      courseCols.forEach(([i, c]) => { const v = cell(r, i); if (v) st.completion[c] = v; });
+      students.push(st); stuById[st.id || ("名:" + name)] = st;
+    });
+  }
+  /* 選課紀錄（長表：一列一筆 員編/姓名/課程/梯次/場次 或 日期） */
+  const te = table(findSheet(book, "enroll"), ["course"]);
+  if (te) {
+    const used = new Set();
+    const ix = {}; ["id","name","course","batch","no","date","level","phone"].forEach(k => ix[k] = colIdx(te.head, k, used));
+    const iStatus = te.head.indexOf("狀態");
+    te.body.forEach(r => {
+      const c = cell(r, ix.course), name = cell(r, ix.name), id = cell(r, ix.id);
+      if (!c || !(name || id)) return;
+      if (iStatus >= 0 && /取消/.test(cell(r, iStatus))) return;
+      const key = id || ("名:" + name);
+      let st = stuById[key] || (name ? students.find(s => s.name === name && !s.id) : null);
+      if (!st) { st = { id, name, batch: "", level: cell(r, ix.level), phone: cell(r, ix.phone), note: "", completion: {} }; students.push(st); stuById[key] = st; }
+      const b = cell(r, ix.batch).replace(/梯$/, "").toUpperCase(), no = cell(r, ix.no), d = ix.date < 0 ? "" : r[ix.date];
+      st.completion[c] = no ? ((b ? b + "梯 " : "") + "場次" + String(no).replace(/\D/g, "")) : (toDate(d) || (b ? b + "梯" : "已排定"));
+      if (!courseInfo[c]) { courseInfo[c] = {}; courses.push(c); }
+    });
+  }
+  if (!students.length) warn.push("沒有學員資料（「學員名單」或「選課紀錄」分頁），學員課表與完課率將是空的。");
+
+  /* 師資 */
+  const faculty = [];
+  const tf = table(findSheet(book, "faculty"), ["name"]);
+  if (tf) {
+    const used = new Set();
+    const ix = {}; ["name","dept","title","fcourses","phone","note"].forEach(k => ix[k] = colIdx(tf.head, k, used));
+    tf.body.forEach(r => { const n = cell(r, ix.name); if (n) faculty.push({ name: n, dept: cell(r, ix.dept), title: cell(r, ix.title), courses: cell(r, ix.fcourses), phone: cell(r, ix.phone), note: cell(r, ix.note) }); });
+  }
+  /* 沒有師資分頁時，從場次中的教師自動整理 */
+  if (!faculty.length) {
+    const seen = {};
+    sessions.forEach(s => [s.teacher, s.teacher2].forEach(t => splitList(t).forEach(n => { if (!seen[n]) { seen[n] = new Set(); faculty.push({ name: n, dept: "", title: "", courses: "", phone: "", note: "" }); } seen[n].add(s.course); })));
+    faculty.forEach(f => f.courses = [...seen[f.name]].join("、"));
+  }
+
+  /* 課程回饋 */
+  const feedback = [];
+  const tfb = table(findSheet(book, "feedback"), ["course"]);
+  if (tfb) {
+    const used = new Set();
+    const ix = {}; ["course","batch","student","date"].forEach(k => ix[k] = colIdx(tfb.head, k, used));
+    ["time"].forEach(k => colIdx(tfb.head, k, used));
+    tfb.body.forEach(r => {
+      const c = cell(r, ix.course); if (!c) return;
+      const texts = [];
+      tfb.head.forEach((h, i) => { if (used.has(i)) return; const v = cell(r, i); if (v) texts.push({ label: h, val: v }); });
+      if (texts.length) feedback.push({ course: c, batch: cell(r, ix.batch).replace(/梯$/, ""), student: cell(r, ix.student), date: toDate(ix.date < 0 ? "" : r[ix.date]) || cell(r, ix.date), texts });
+    });
+  }
+
+  const bset = new Set();
+  sessions.forEach(s => s.batch && bset.add(s.batch));
+  students.forEach(s => s.batch && bset.add(s.batch));
+  const batches = [...bset].sort();
+  const levels = [...new Set(students.map(s => s.level).filter(Boolean))].sort();
+  return Object.assign({ today, courses, courseInfo, sessions, students, faculty, feedback, batches, levels, warn }, meta || {});
+}
+
+/* =====================================================================
+   讀取 Excel／CSV
+   ===================================================================== */
+function bookFromWorkbook(wb){
+  const out = {};
+  wb.SheetNames.forEach(n => {
+    out[n] = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: "" })
+      .map(r => r.map(v => v instanceof Date ? ymd(v) : v));
+  });
+  return out;
+}
+function readFileToBook(file){
+  return new Promise((res, rej) => {
+    if (!window.XLSX) return rej(new Error("Excel 解析元件未載入，請確認網路連線後重新整理"));
+    const fr = new FileReader();
+    fr.onload = () => {
+      try {
+        const isCsv = /\.(csv|tsv|txt)$/i.test(file.name);
+        const wb = isCsv ? XLSX.read(new TextDecoder("utf-8").decode(fr.result), { type: "string", cellDates: true })
+                         : XLSX.read(fr.result, { type: "array", cellDates: true });
+        const book = bookFromWorkbook(wb);
+        /* 單一 CSV：檔名當分頁名 */
+        if (isCsv) { const k = Object.keys(book)[0]; const nm = file.name.replace(/\.[^.]+$/, ""); if (k !== nm) { book[nm] = book[k]; delete book[k]; } }
+        res(book);
+      } catch (e) { rej(new Error("無法讀取這個檔案：" + e.message)); }
+    };
+    fr.onerror = () => rej(new Error("讀取檔案失敗"));
+    fr.readAsArrayBuffer(file);
+  });
+}
+
+/* =====================================================================
+   載入流程
+   ===================================================================== */
+function onBook(book, meta){
+  DATA = buildData(book, meta);
+  SOURCE = meta.source;
+  $("#gen").textContent = (meta.label || "") + (meta.generatedAt ? "・更新於 " + meta.generatedAt : "");
+  renderAll();
+}
+function renderAll(){
+  COPY.length = 0;
+  renderBanner(); renderOverview(); renderSessions(); renderFaculty(); renderStudents(); renderFeedback(); renderYear(); renderImport();
+  if ($("#gantt").classList.contains("active")) renderGantt();
+}
+function renderBanner(){
+  let h = "";
+  if (SOURCE === "local") h = `<div class="banner"><span>目前顯示的是<b>本機匯入</b>的資料（只有這台電腦看得到）。</span><button class="btn ghost" onclick="clearLocal()">改回共用資料</button></div>`;
+  else if (SOURCE === "demo") h = `<div class="banner"><span>目前顯示的是<b>範例資料</b>。請到「匯入資料」分頁上傳新的課程試算表。</span><button class="btn ghost" onclick="showTab('imp')">前往匯入</button></div>`;
+  $("#banner").innerHTML = h;
+}
+async function load(){
+  const saved = store.get();
+  if (saved) { try { const o = JSON.parse(saved); return onBook(o.book, { source: "local", label: "本機匯入：" + o.name, generatedAt: o.at }); } catch (e) { store.del(); } }
+  if (GAS_URL && GAS_URL.indexOf("http") === 0) {
+    try { const d = await loadGas(); return onBook(d.sheets, { source: "gas", label: "Google 試算表", generatedAt: d.generatedAt }); }
+    catch (e) { console.warn(e); }
+  }
+  if (DATA_FILE && window.XLSX) {
+    try {
+      const r = await fetch(DATA_FILE, { cache: "no-store" });
+      if (r.ok) {
+        const wb = XLSX.read(await r.arrayBuffer(), { type: "array", cellDates: true });
+        const lm = r.headers.get("last-modified");
+        return onBook(bookFromWorkbook(wb), { source: "file", label: DATA_FILE, generatedAt: lm ? ymd(new Date(lm)) : "" });
+      }
+    } catch (e) { console.warn(e); }
+  }
+  onBook(demoBook(), { source: "demo", label: "範例資料" });
+}
+function loadGas(){
+  return fetch(GAS_URL).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }).catch(() => new Promise((res, rej) => {
+    const cb = "__cb" + Date.now(), s = document.createElement("script");
+    window[cb] = d => { res(d); delete window[cb]; s.remove(); };
+    s.src = GAS_URL + (GAS_URL.indexOf("?") >= 0 ? "&" : "?") + "callback=" + cb;
+    s.onerror = () => rej(new Error("GAS 連線失敗"));
+    document.body.appendChild(s);
+  }));
+}
+function clearLocal(){ store.del(); DATA = null; $("#ov").innerHTML = '<div class="loading">載入中…</div>'; load(); showTab("ov"); }
+window.addEventListener("load", load);
+
+/* =====================================================================
+   學員 ↔ 場次 對應
+   ===================================================================== */
+function pickOf(st, course){
+  const v = st.completion[course]; if (!v) return null;
+  const s = String(v).trim();
+  if (DONE_WORDS.test(s)) return { done: true };
+  const d = toDate(s);
+  if (d && /[\/\-年.]/.test(s)) return { date: d };
+  let m = s.match(/^([A-Za-z])\s*梯?\s*(?:場次|第)?\s*(\d+)/);
+  if (m) return { batch: m[1].toUpperCase(), no: Number(m[2]) };
+  m = s.match(/(\d+)/);
+  if (m) return { batch: st.batch, no: Number(m[1]) };
+  m = s.match(/^([A-Za-z])\s*梯?$/);
+  if (m) return { batch: m[1].toUpperCase() };
+  return {};
+}
+function sessOf(st, course){
+  const p = pickOf(st, course); if (!p) return null;
+  const cand = DATA.sessions.filter(s => s.course === course);
+  if (p.date) return cand.filter(s => s.date === p.date).sort((a, b) => (a.batch === st.batch ? -1 : 0) - (b.batch === st.batch ? -1 : 0))[0] || null;
+  if (p.no) return cand.find(s => s.batch === (p.batch || "") && s.no === p.no) || (p.batch ? null : cand.find(s => s.no === p.no)) || null;
+  if (p.batch) { const c2 = cand.filter(s => s.batch === p.batch); return c2.length === 1 ? c2[0] : null; }
+  return null;
+}
+function rosterOf(sess){ return DATA.students.filter(st => { const s = sessOf(st, sess.course); return s === sess; }); }
+/* 三態：none 未排定 / sched 已排定（尚未上課）/ done 已完成（日期已過） */
+function statOf(st, course){
+  const p = pickOf(st, course);
+  if (!p) return { k: "none", d: "", s: null };
+  if (p.done) return { k: "done", d: "已完成", s: null };
+  const s = sessOf(st, course);
+  if (!s) return { k: p.date ? (p.date <= DATA.today ? "done" : "sched") : "sched", d: p.date || "", s: null };
+  if (!s.date) return { k: "sched", d: "", s };
+  return { k: s.date <= DATA.today ? "done" : "sched", d: s.date, s };
+}
+const isDone = (st, c) => statOf(st, c).k === "done";
+
+/* ---------- 複製 ---------- */
+document.addEventListener("click", e => {
+  const b = e.target.closest(".cpbtn"); if (!b) return;
+  const t = COPY[Number(b.dataset.ci)] || "";
+  const fin = () => { const o = b.textContent; b.textContent = "✔ 已複製"; setTimeout(() => b.textContent = o, 1400); };
+  const fb = () => { const ta = document.createElement("textarea"); ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); fin(); } catch (x) { alert("複製失敗，請手動選取"); } ta.remove(); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(fin).catch(fb); else fb();
+});
+function copyBtn(label, text){ COPY.push(text); return `<button class="cpbtn" data-ci="${COPY.length - 1}">${label}</button>`; }
+const teachers = s => [s.teacher, s.teacher2].filter(Boolean).join(" / ");
+const wd = d => d ? "（" + "日一二三四五六"[new Date(d + "T00:00:00").getDay()] + "）" : "";
+
+/* =====================================================================
+   總覽
+   ===================================================================== */
+function renderOverview(){
+  const S = DATA.students, sess = DATA.sessions, C = DATA.courses;
+  const totalPairs = S.length * C.length || 1;
+  let donePairs = 0, schedPairs = 0;
+  S.forEach(s => C.forEach(c => { const k = statOf(s, c).k; if (k === "done") donePairs++; else if (k === "sched") schedPairs++; }));
+  const doneSess = sess.filter(x => x.date && x.date <= DATA.today).length;
+  const uncfm = sess.filter(x => !x.confirmed && (!x.date || x.date >= DATA.today)).length;
+  const cards = [["課程項目", C.length], ["已排課場次", sess.length], ["已完成場次", doneSess + "<small> / " + sess.length + "</small>"],
+    ["學員總數", S.length], ["整體完課率", Math.round(donePairs / totalPairs * 100) + "<small>%</small>"], ["教師未確認", uncfm + "<small> 場</small>"]];
+  let h = "";
+  if (DATA.warn.length) h += `<div class="panel"><h2>資料提醒</h2><ul class="chk">${DATA.warn.map(w => `<li class="bad-l">${esc(w)}</li>`).join("")}</ul></div>`;
+  h += '<div class="cards">' + cards.map(c => `<div class="card"><div class="k">${c[0]}</div><div class="v">${c[1]}</div></div>`).join("") + "</div>";
+
+  /* 近期課程（今天起 30 天） */
+  const lim = ymd(new Date(Date.now() + 30 * 86400000));
+  const up = sess.filter(s => s.date && s.date >= DATA.today && s.date <= lim).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  h += `<div class="panel"><h2>近期課程（未來 30 天）</h2>`;
+  h += up.length ? `<div class="tw"><table><thead><tr><th>日期</th><th>時間</th><th>課程</th><th>梯次</th><th>地點</th><th>教師</th><th>人數</th><th>教師確認</th></tr></thead><tbody>` +
+    up.map(s => { const n = rosterOf(s).length; return `<tr><td>${esc(s.date)}${wd(s.date)}</td><td>${esc(s.time)}</td><td class="name">${esc(s.course)}</td><td>${chip(s.batch)}</td><td>${esc(s.place)}</td><td>${esc(teachers(s))}</td>
+      <td>${n}${s.cap ? " / " + s.cap : ""}</td><td class="${s.confirmed ? "yes-c" : "no-c"}">${s.confirmed ? '<span class="yes">已確認</span>' : '<span class="no">未確認</span>'}</td></tr>`; }).join("") + "</tbody></table></div>"
+    : '<div class="muted">未來 30 天沒有排定的課程。</div>';
+  h += "</div>";
+
+  h += '<div class="panel"><h2>各課程 完成率</h2>';
+  if (!C.length) h += '<div class="muted">尚無課程。</div>';
+  C.forEach(c => {
+    const d = S.filter(s => isDone(s, c)).length, tot = S.length || 1, pct = Math.round(d / tot * 100);
+    const ns = sess.filter(x => x.course === c).length;
+    h += `<div class="prow"><div class="name">${esc(c)}</div><div class="meta">${ns} 場次</div><div class="bar"><span style="width:${pct}%"></span><em>${d}/${S.length} · ${pct}%</em></div></div>`;
+  });
+  h += "</div>";
+  const groups = DATA.batches.length ? DATA.batches.map(b => [chip(b), S.filter(s => s.batch === b)]) : DATA.levels.map(l => [`<b>${esc(l)}</b>`, S.filter(s => s.level === l)]);
+  if (groups.length) {
+    h += `<div class="panel"><h2>${DATA.batches.length ? "各梯次" : "各級別"} 平均完課率</h2>`;
+    groups.forEach(([lab, grp]) => {
+      if (!grp.length) return;
+      let dp = 0; grp.forEach(s => C.forEach(c => { if (isDone(s, c)) dp++; }));
+      const pct = Math.round(dp / (grp.length * (C.length || 1)) * 100);
+      h += `<div class="prow"><div class="name">${lab}</div><div class="meta">${grp.length} 人</div><div class="bar"><span style="width:${pct}%"></span><em>${pct}%</em></div></div>`;
+    });
+    h += "</div>";
+  }
+  $("#ov").innerHTML = h;
+}
+
+/* =====================================================================
+   甘特圖
+   ===================================================================== */
+function renderGantt(){
+  const el = $("#gantt");
+  const sess = DATA.sessions.filter(s => s.date);
+  if (!sess.length) { el.innerHTML = '<div class="panel">尚無含日期的排課資料，請在「課程場次」填入日期。</div>'; return; }
+  const dates = sess.map(s => new Date(s.date + "T00:00:00"));
+  let min = new Date(Math.min(...dates)), max = new Date(Math.max(...dates)); const today = new Date(DATA.today + "T00:00:00");
+  min = new Date(min.getFullYear(), min.getMonth(), 1); max = new Date(max.getFullYear(), max.getMonth() + 1, 0);
+  if (today < min) min = new Date(today.getFullYear(), today.getMonth(), 1);
+  if (today > max) max = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const span = (max - min) / 86400000 || 1;
+  const pos = d => ((new Date(d) - min) / 86400000) / span * 100;
+  const months = []; let cur = new Date(min);
+  while (cur <= max) { months.push(new Date(cur)); cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1); }
+  let head = '<div class="g-head"><div class="g-label" style="background:var(--head)">課程 \\ 月份</div><div class="g-track">';
+  months.forEach(m => head += `<div class="g-month" style="left:${pos(m)}%">${m.getFullYear()}/${pad(m.getMonth() + 1)}</div>`);
+  head += "</div></div>";
+  let rows = "";
+  DATA.courses.forEach(c => {
+    let marks = "";
+    sess.forEach((s, i) => {
+      if (s.course !== c) return;
+      const n = rosterOf(s).length, idx = DATA.sessions.indexOf(s);
+      const tip = (s.batch ? s.batch + "梯 " : "") + "場次" + s.no + "｜" + s.date + " " + s.time + "｜" + s.place + "｜" + teachers(s) + "｜" + (s.confirmed ? "已確認" : "未確認") + "｜" + n + " 人（點擊看名單）";
+      marks += `<div class="g-mark" data-i="${idx}" style="left:${pos(s.date + "T00:00:00")}%;background:${colorOf(s.batch)}" title="${esc(tip)}">${esc(s.batch)}${s.no}·${n}人</div>`;
+    });
+    rows += `<div class="g-row"><div class="g-label">${esc(c)}</div><div class="g-track">${marks}<div class="g-today" style="left:${pos(today)}%"><b>今日</b></div></div></div>`;
+  });
+  const legend = '<div class="legend">' + DATA.batches.map(b => `<span><i class="dot" style="background:${colorOf(b)}"></i>${esc(b)}梯</span>`).join("") +
+    '<span><i class="dot" style="background:var(--red)"></i>今日紅線</span></div>';
+  el.innerHTML = `<div class="panel"><h2>課程甘特圖（依實際日期）</h2>
+    <div class="controls"><button class="gbtn" id="gzin">＋</button><button class="gbtn" id="gzout">－</button><button class="gbtn ghost" id="gzrst">⟳</button>
+      <span class="muted">放大／縮小，按住可左右拖曳；標記為「梯次場次·人數」，<b>點擊標記可展開學員名單</b></span></div>
+    ${legend}<div class="gantt-wrap" id="gwrap"><div class="gantt" id="ginner">${head}${rows}</div></div></div><div id="gdetail"></div>`;
+  applyZoom();
+  $("#gzin").onclick = () => { GZOOM = Math.min(6, GZOOM + .5); applyZoom(); };
+  $("#gzout").onclick = () => { GZOOM = Math.max(1, GZOOM - .5); applyZoom(); };
+  $("#gzrst").onclick = () => { GZOOM = 1; applyZoom(); $("#gwrap").scrollLeft = 0; };
+  enableDrag($("#gwrap"));
+  el.querySelectorAll(".g-mark").forEach(m => m.addEventListener("click", ev => {
+    ev.stopPropagation();
+    const s = DATA.sessions[Number(m.dataset.i)];
+    if (s) { $("#gdetail").innerHTML = sessionCard(s, true); $("#gdetail").scrollIntoView({ behavior: "smooth", block: "nearest" }); }
+  }));
+}
+function layoutGantt(){
+  const inner = $("#ginner"); if (!inner) return;
+  const GAP = 4, H = 22, STEP = 24, TOP = 6;
+  inner.querySelectorAll(".g-row").forEach(row => {
+    const marks = [...row.querySelectorAll(".g-mark")];
+    if (!marks.length) { row.style.height = "48px"; return; }
+    marks.sort((a, b) => a.offsetLeft - b.offsetLeft);
+    const laneEnd = [];
+    marks.forEach(m => { const l = m.offsetLeft, r = l + m.offsetWidth; let lane = 0;
+      while (lane < laneEnd.length && !(laneEnd[lane] + GAP <= l)) lane++;
+      laneEnd[lane] = r; m.style.top = (TOP + lane * STEP) + "px"; });
+    row.style.height = Math.max(48, 2 * TOP + (laneEnd.length - 1) * STEP + H) + "px";
+  });
+}
+let _gz; window.addEventListener("resize", () => { clearTimeout(_gz); _gz = setTimeout(layoutGantt, 150); });
+function applyZoom(){ const g = $("#ginner"); if (!g) return; g.style.width = (Math.max(900, ($("#gwrap") || {}).clientWidth || 900) * GZOOM) + "px"; requestAnimationFrame(layoutGantt); }
+function enableDrag(w){
+  let down = false, sx = 0, sl = 0;
+  w.addEventListener("mousedown", e => { down = true; w.classList.add("drag"); sx = e.pageX; sl = w.scrollLeft; });
+  window.addEventListener("mouseup", () => { down = false; w.classList.remove("drag"); });
+  w.addEventListener("mousemove", e => { if (!down) return; e.preventDefault(); w.scrollLeft = sl - (e.pageX - sx); });
+}
+
+/* =====================================================================
+   場次卡片
+   ===================================================================== */
+function sessionCard(s, highlight){
+  const list = rosterOf(s);
+  const cfm = s.confirmed ? `<span class="yes">教師已確認${s.confirmTime ? "（" + esc(s.confirmTime) + "）" : ""}</span>` : '<span class="no">教師未確認</span>';
+  const names = list.map(x => x.name).join("、");
+  const phones = list.map(x => x.phone).filter(Boolean).join("、");
+  const both = list.map(x => x.name + " " + (x.phone || "")).join("\n");
+  const notice = `【臨床技能課程】${s.course}\n日期：${s.date || "未定"}${wd(s.date)} ${s.time}\n地點：${s.place || "未定"}\n教師：${teachers(s) || "未定"}\n學員：${names || "（尚無）"}`;
+  const rows = list.map((x, i) => `<tr><td>${i + 1}</td><td class="name">${esc(x.name)}${s.batch && x.batch && x.batch !== s.batch ? '<span class="ins">' + esc(x.batch) + " 插班</span>" : ""}</td>
+    <td>${esc(x.id)}</td><td>${esc(x.level)}</td><td>${esc(x.phone)}</td><td>${chip(x.batch)}</td></tr>`).join("");
+  const over = s.cap && list.length > s.cap;
+  return `<div class="panel" ${highlight ? 'style="border:2px solid ' + colorOf(s.batch) + '"' : ""}>
+    <div class="sess-head"><h2 style="margin:0">${esc(s.course)}</h2>${s.batch ? chip(s.batch) : ""}<span class="muted">場次 ${esc(s.no)}</span>${s.target ? `<span class="tag">${esc(s.target)}</span>` : ""}</div>
+    <div class="sess-meta">📅 ${esc(s.date || "未定")}${wd(s.date)} ${esc(s.time)}　📍 ${esc(s.place || "未定")}　👨‍⚕️ ${esc(teachers(s) || "未定")}　${cfm}${s.note ? "<br>📝 " + esc(s.note) : ""}</div>
+    <div class="controls"><b class="${over ? "no" : ""}">學員 ${list.length}${s.cap ? " / " + s.cap : ""} 人</b>
+      ${list.length ? copyBtn("複製姓名", names) + copyBtn("複製分機", phones) + copyBtn("複製姓名+分機", both) : ""}${copyBtn("複製上課通知", notice)}</div>
+    ${list.length ? `<div class="tw"><table><thead><tr><th style="width:50px">序</th><th>姓名</th><th>員編</th><th>級別</th><th>分機</th><th>梯次</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<div class="muted">尚無學員排入此場次。</div>'}
+  </div>`;
+}
+
+/* =====================================================================
+   課程場次
+   ===================================================================== */
+function opt(list, all){ return [`<option value="">${all}</option>`].concat(list.map(c => `<option>${esc(c)}</option>`)).join(""); }
+function renderSessions(){
+  $("#ses").innerHTML = `<div class="panel"><h2>課程場次與上課名單</h2>
+    <div class="controls"><select id="seC">${opt(DATA.courses, "全部課程")}</select>
+      ${DATA.batches.length ? `<select id="seB">${opt(DATA.batches, "全部梯次")}</select>` : ""}
+      <select id="seS"><option value="">全部狀態</option><option value="future">尚未上課</option><option value="past">已上課</option><option value="uncfm">教師未確認</option></select>
+      <input id="seQ" type="text" placeholder="搜尋教師／地點…"><span class="muted" id="seCount"></span></div>
+    <div class="muted">每個場次可一鍵複製姓名、分機或上課通知，方便貼到通訊軟體或簽到表。</div></div><div id="seBody"></div>`;
+  ["seC","seB","seS","seQ"].forEach(i => { const e = $("#" + i); if (e) e.oninput = drawSessions; });
+  drawSessions();
+}
+function drawSessions(){
+  const fc = $("#seC").value, fb = ($("#seB") || {}).value || "", fs = $("#seS").value, q = $("#seQ").value.trim();
+  let list = DATA.sessions.slice();
+  if (fc) list = list.filter(s => s.course === fc);
+  if (fb) list = list.filter(s => s.batch === fb);
+  if (fs === "future") list = list.filter(s => !s.date || s.date >= DATA.today);
+  if (fs === "past") list = list.filter(s => s.date && s.date < DATA.today);
+  if (fs === "uncfm") list = list.filter(s => !s.confirmed);
+  if (q) list = list.filter(s => (s.teacher + s.teacher2 + s.place).indexOf(q) >= 0);
+  list.sort((a, b) => DATA.courses.indexOf(a.course) - DATA.courses.indexOf(b.course) || (a.date || "9").localeCompare(b.date || "9") || a.batch.localeCompare(b.batch) || a.no - b.no);
+  $("#seBody").innerHTML = list.length ? list.map(s => sessionCard(s, false)).join("") : '<div class="panel"><div class="muted">沒有符合條件的場次。</div></div>';
+  $("#seCount").textContent = "共 " + list.length + " 場次";
+}
+
+/* =====================================================================
+   師資一覽
+   ===================================================================== */
+function renderFaculty(){
+  let h = `<div class="panel"><h2>師資一覽（含排課場次統計）</h2><div class="tw"><table><thead><tr>
+    <th>姓名</th><th>科別</th><th>職稱</th><th>負責課程</th><th>分機</th><th>排課場次</th><th>已確認</th><th>下次授課</th><th>累計學員</th><th>備註</th></tr></thead><tbody>`;
+  if (!DATA.faculty.length) h += '<tr><td colspan="10" class="muted">尚無師資資料</td></tr>';
+  DATA.faculty.forEach(f => {
+    const mine = DATA.sessions.filter(s => splitList(s.teacher).concat(splitList(s.teacher2)).some(n => n === f.name || n.indexOf(f.name) >= 0));
+    const ok = mine.filter(s => s.confirmed);
+    const next = mine.filter(s => s.date && s.date >= DATA.today).map(s => s.date).sort()[0] || "";
+    const ppl = mine.reduce((a, s) => a + rosterOf(s).length, 0);
+    h += `<tr><td class="name">${esc(f.name)}</td><td>${esc(f.dept)}</td><td>${esc(f.title)}</td><td class="l">${esc(f.courses)}</td><td>${esc(f.phone)}</td>
+      <td><b>${mine.length}</b></td><td>${mine.length ? `<span class="${ok.length === mine.length ? "yes" : "no"}">${ok.length}/${mine.length}</span>` : ""}</td>
+      <td>${esc(next)}</td><td>${ppl || ""}</td><td class="l">${esc(f.note)}</td></tr>`;
+  });
+  h += "</tbody></table></div></div>";
+  const ss = DATA.sessions.slice().sort((a, b) => (a.date || "9").localeCompare(b.date || "9"));
+  if (ss.length) {
+    const un = ss.filter(s => !s.confirmed).length;
+    h += `<div class="panel"><h2>場次教師確認明細　<span class="muted" style="font-size:14px;font-weight:400">未確認 ${un} / 共 ${ss.length} 場</span></h2>
+      <div class="tw"><table><thead><tr><th>日期</th><th>時間</th><th>課程</th><th>梯次</th><th>場次</th><th>負責教師</th><th>確認狀態</th><th>確認時間</th></tr></thead><tbody>` +
+      ss.map(s => `<tr><td>${esc(s.date)}${wd(s.date)}</td><td>${esc(s.time)}</td><td class="name">${esc(s.course)}</td><td>${chip(s.batch)}</td><td>${esc(s.no)}</td><td>${esc(teachers(s))}</td>
+        <td class="${s.confirmed ? "yes-c" : "no-c"}">${s.confirmed ? '<span class="yes">已確認</span>' : '<span class="no">未確認</span>'}</td><td>${esc(s.confirmTime)}</td></tr>`).join("") + "</tbody></table></div></div>";
+  }
+  $("#fac").innerHTML = h;
+}
+
+/* =====================================================================
+   學員課表
+   ===================================================================== */
+const LEGEND3 = `<div class="legend"><span><i class="dot" style="background:var(--greenbg);border:1px solid #bbb"></i>已完成（日期已過）</span>
+  <span><i class="dot" style="background:var(--amberbg);border:1px solid #bbb"></i>已排定（尚未上課）</span><span><i class="dot" style="background:var(--redbg);border:1px solid #bbb"></i>未排定</span></div>`;
+function renderStudents(){
+  $("#stu").innerHTML = `<div class="panel"><h2>學員課表（含上課日期）</h2>${LEGEND3}
+    <div class="controls"><input id="sSearch" type="text" placeholder="搜尋姓名／員編…">
+      ${DATA.batches.length ? `<select id="sBatch">${opt(DATA.batches, "全部梯次")}</select>` : ""}
+      ${DATA.levels.length ? `<select id="sLevel">${opt(DATA.levels, "全部級別")}</select>` : ""}
+      <select id="sCourse">${opt(DATA.courses, "全部課程")}</select>
+      <select id="sStatus"><option value="">全部狀態</option><option value="done">已完成</option><option value="sched">已排定未上</option><option value="none">未排定</option></select>
+      <span class="muted" id="sCount"></span></div><div id="sTable" class="tw"></div></div>`;
+  ["sSearch","sBatch","sLevel","sCourse","sStatus"].forEach(id => { const e = $("#" + id); if (e) e.oninput = drawStuTable; });
+  drawStuTable();
+}
+function cellOf(st, c){
+  const r = statOf(st, c);
+  if (r.k === "none") return '<td class="no-c"><span class="no">—</span></td>';
+  const tip = r.s ? esc((r.s.batch ? r.s.batch + "梯 " : "") + "場次" + r.s.no + " " + r.s.time + " " + r.s.place) : "";
+  return `<td class="${r.k === "done" ? "yes-c" : "sch-c"}" title="${tip}">${r.k === "done" ? "✔ " : "🕐 "}${esc(r.d || "已排定")}</td>`;
+}
+function filteredStudents(){
+  const kw = $("#sSearch").value.trim(), fb = ($("#sBatch") || {}).value || "", fl = ($("#sLevel") || {}).value || "", fc = $("#sCourse").value, fs = $("#sStatus").value;
+  let list = DATA.students.slice();
+  if (kw) list = list.filter(s => (s.name + s.id).indexOf(kw) >= 0);
+  if (fb) list = list.filter(s => s.batch === fb);
+  if (fl) list = list.filter(s => s.level === fl);
+  if (fs) list = list.filter(s => fc ? statOf(s, fc).k === fs : DATA.courses.some(c => statOf(s, c).k === fs));
+  return list;
+}
+function drawStuTable(){
+  const list = filteredStudents(), C = DATA.courses;
+  let h = `<table><thead><tr><th>員編</th><th>姓名</th><th>級別</th>${DATA.batches.length ? "<th>梯次</th>" : ""}<th>分機</th>` + C.map(c => `<th>${esc(c)}</th>`).join("") + "<th>完成</th></tr></thead><tbody>";
+  list.forEach(s => {
+    let dc = 0; const tds = C.map(c => { if (isDone(s, c)) dc++; return cellOf(s, c); }).join("");
+    h += `<tr><td>${esc(s.id)}</td><td class="name">${esc(s.name)}</td><td>${esc(s.level)}</td>${DATA.batches.length ? `<td>${chip(s.batch)}</td>` : ""}<td>${esc(s.phone)}</td>${tds}<td><b>${dc}/${C.length}</b></td></tr>`;
+  });
+  if (!list.length) h += `<tr><td colspan="${C.length + 6}" class="muted">沒有符合條件的學員</td></tr>`;
+  $("#sTable").innerHTML = h + "</tbody></table>";
+  $("#sCount").textContent = "共 " + list.length + " 人";
+}
+
+/* =====================================================================
+   課程回饋
+   ===================================================================== */
+function renderFeedback(){
+  $("#fb").innerHTML = `<div class="panel"><h2>課程回饋</h2><div class="controls"><select id="fbCourse">${opt(DATA.courses, "全部課程")}</select><span class="muted" id="fbCount"></span></div></div><div id="fbBody"></div>`;
+  $("#fbCourse").onchange = drawFeedback; drawFeedback();
+}
+function drawFeedback(){
+  const fc = $("#fbCourse").value;
+  let h = "", total = 0;
+  (fc ? [fc] : DATA.courses).forEach(c => {
+    const rows = DATA.feedback.filter(f => f.course === c); if (!rows.length) return; total += rows.length;
+    const items = rows.map(r => {
+      const meta = [r.batch ? r.batch + "梯" : "", r.student, r.date].filter(Boolean).join("・");
+      return `<div style="padding:10px 12px;border-left:3px solid var(--main2);background:#f7f9f6;margin:8px 0;border-radius:4px">
+        ${r.texts.map(t => `<div style="margin:2px 0"><span class="muted">${esc(t.label)}：</span>${esc(t.val)}</div>`).join("")}${meta ? `<div class="muted" style="margin-top:4px">— ${esc(meta)}</div>` : ""}</div>`;
+    }).join("");
+    h += `<div class="panel"><h2>${esc(c)}　<span class="muted" style="font-size:14px;font-weight:400">${rows.length} 則回饋</span></h2>${items}</div>`;
+  });
+  $("#fbBody").innerHTML = h || '<div class="panel"><div class="muted">目前沒有回饋資料。可在試算表新增「課程回饋」分頁。</div></div>';
+  $("#fbCount").textContent = "共 " + total + " 則回饋";
+}
+
+/* =====================================================================
+   年度總表 + 全學員 Checklist
+   ===================================================================== */
+function renderYear(){
+  const sess = DATA.sessions.filter(s => s.date);
+  const months = [...new Set(sess.map(s => s.date.slice(0, 7)))].sort();
+  let h;
+  if (months.length) {
+    h = `<div class="panel"><h2>年度排課總表（各月場次數）</h2><div class="tw"><table><thead><tr><th>課程 \\ 月份</th>${months.map(m => `<th>${m}</th>`).join("")}<th>合計</th></tr></thead><tbody>`;
+    DATA.courses.forEach(c => {
+      let tot = 0;
+      const cells = months.map(m => { const n = sess.filter(s => s.course === c && s.date.slice(0, 7) === m).length; tot += n;
+        return `<td class="heat${Math.min(n, 3)}">${n || ""}</td>`; }).join("");
+      h += `<tr><td class="name">${esc(c)}</td>${cells}<td><b>${tot}</b></td></tr>`;
+    });
+    h += "</tbody></table></div></div>";
+  } else h = '<div class="panel"><h2>年度排課總表</h2><div class="muted">尚無含日期的排課。</div></div>';
+
+  const C = DATA.courses;
+  let csv = [["員編","姓名","級別","梯次"].concat(C, ["完成數","尚未完成課程"])];
+  h += `<div class="panel"><h2>全學員完課 Checklist</h2>${LEGEND3}<div class="controls" id="ckBtn"></div><div class="tw"><table><thead><tr><th>員編</th><th>姓名</th><th>級別</th>${DATA.batches.length ? "<th>梯次</th>" : ""}` +
+    C.map(c => `<th>${esc(c)}</th>`).join("") + '<th>完成</th><th style="text-align:left">尚未完成課程</th></tr></thead><tbody>';
+  DATA.students.forEach(s => {
+    let dc = 0; const miss = [];
+    const tds = C.map(c => { if (isDone(s, c)) dc++; else miss.push(c); return cellOf(s, c); }).join("");
+    csv.push([s.id, s.name, s.level, s.batch].concat(C.map(c => { const r = statOf(s, c); return r.k === "none" ? "" : (r.k === "done" ? "✔ " : "排定 ") + (r.d || ""); }), [dc + "/" + C.length, miss.join("、")]));
+    h += `<tr><td>${esc(s.id)}</td><td class="name">${esc(s.name)}</td><td>${esc(s.level)}</td>${DATA.batches.length ? `<td>${chip(s.batch)}</td>` : ""}${tds}<td><b>${dc}/${C.length}</b></td>
+      <td class="l" style="color:${miss.length ? "var(--red)" : "var(--green)"}">${miss.length ? esc(miss.join("、")) : "全部完成 ✔"}</td></tr>`;
+  });
+  h += "</tbody></table></div></div>";
+  $("#all").innerHTML = h;
+  $("#ckBtn").innerHTML = copyBtn("複製整張表（可貼到 Excel）", csv.map(r => r.map(v => String(v == null ? "" : v).replace(/\t|\n/g, " ")).join("\t")).join("\n"));
+}
+
+/* =====================================================================
+   匯入資料
+   ===================================================================== */
+function renderImport(){
+  const src = { local: "本機匯入的檔案", gas: "Google 試算表（GAS）", file: "網站上的 " + DATA_FILE, demo: "範例資料" }[SOURCE] || "";
+  const stat = k => DATA[k].length;
+  $("#imp").innerHTML = `<div class="panel"><h2>匯入新的課程試算表</h2>
+    <div class="drop" id="drop"><div style="font-size:34px">📄</div><b>點這裡選擇檔案，或把 Excel 拖曳進來</b>
+      <div class="muted" style="margin-top:6px">支援 .xlsx／.xls／.csv（從 SharePoint／OneDrive 用「下載複本」即可）</div>
+      <input type="file" id="file" accept=".xlsx,.xls,.xlsm,.csv" hidden></div>
+    <div class="controls" style="margin-top:14px"><button class="btn" onclick="downloadTemplate()">下載空白範本</button>
+      <button class="btn ghost" onclick="downloadTemplate(true)">下載範本（含範例資料）</button>
+      ${SOURCE === "local" ? '<button class="btn ghost" onclick="clearLocal()">清除本機匯入，改回共用資料</button>' : ""}</div>
+    <div id="impMsg"></div></div>
+
+    <div class="panel"><h2>目前資料</h2>
+      <div class="muted">來源：<b>${esc(src)}</b></div>
+      <ul class="chk"><li>課程項目：${DATA.courses.length} 項</li><li>課程場次：${stat("sessions")} 場</li><li>學員：${stat("students")} 人</li><li>師資：${stat("faculty")} 位</li><li>課程回饋：${stat("feedback")} 則</li></ul>
+      ${DATA.warn.length ? `<ul class="chk">${DATA.warn.map(w => `<li class="bad-l">${esc(w)}</li>`).join("")}</ul>` : '<div class="ok-l" style="margin-top:8px">✔ 資料格式正確</div>'}</div>
+
+    <div class="panel"><h2>試算表格式說明</h2>
+      <div class="muted">分頁名稱與欄位名稱照下面填即可，欄位順序不拘、可以多出其他欄位。標 ★ 為必要。</div>
+      <ul class="chk up">
+        <li><b>課程場次</b> ★：<code>課程名稱</code>★、<code>梯次</code>、<code>場次</code>、<code>日期</code>★、<code>時間</code>、<code>地點</code>、<code>教師</code>、<code>協同教師</code>、<code>名額</code>、<code>對象</code>、<code>教師確認</code>（填「是」）、<code>確認時間</code>、<code>備註</code></li>
+        <li><b>學員名單</b>：<code>員編</code>、<code>姓名</code>★、<code>級別</code>（PGY1／PGY2／UGY）、<code>梯次</code>、<code>分機</code>，後面每一欄用<b>課程名稱</b>當欄名，格子填學員要上的場次，例如 <code>A梯 場次1</code>、<code>場次2</code>、<code>2026/3/12</code>，或已上過填 <code>已完成</code></li>
+        <li><b>選課紀錄</b>（可取代上面的課程欄）：一列一筆 <code>員編</code>、<code>姓名</code>、<code>課程名稱</code>、<code>梯次</code>、<code>場次</code> 或 <code>日期</code>，可直接貼報名系統匯出的名單（狀態為「已取消」會略過）</li>
+        <li><b>師資</b>：<code>姓名</code>★、<code>科別</code>、<code>職稱</code>、<code>負責課程</code>、<code>分機</code>、<code>備註</code>（沒有這個分頁時，會從場次的教師欄自動整理）</li>
+        <li><b>課程清單</b>（選填，決定課程顯示順序）：<code>課程名稱</code>、<code>類別</code>、<code>時數</code>、<code>必修</code></li>
+        <li><b>課程回饋</b>（選填）：<code>課程名稱</code>、<code>梯次</code>、<code>學員</code>、<code>日期</code>，其餘欄位都當成回饋文字</li>
+      </ul>
+      <div class="muted" style="margin-top:8px">日期可寫 2026/3/12、2026-03-12、115/3/12（民國）或 Excel 日期格式。日期已過＝已完成，未來＝已排定。</div></div>
+
+    <div class="panel"><h2>讓所有人看到同一份資料</h2>
+      <div class="muted" style="line-height:1.9">「匯入」只會存在你這台電腦的瀏覽器。要公布給大家看，擇一：<br>
+      ① <b>Google 試算表</b>：把 Excel 匯入 Google 試算表 → 擴充功能 → Apps Script，貼上 <code>gas/Code.gs</code> → 部署為網頁應用程式（存取權「任何人」）→ 把網址填到本頁的 <code>GAS_URL</code>。之後直接改試算表即可更新。<br>
+      ② <b>放在網站上</b>：把 Excel 命名為 <code>${esc(DATA_FILE)}</code> 上傳到 GitHub 的 <code>schedule/</code> 資料夾。注意：GitHub 公開專案任何人都能下載此檔，含個資時請改用 ①。</div></div>`;
+  const drop = $("#drop"), file = $("#file");
+  drop.onclick = () => file.click();
+  file.onchange = () => file.files[0] && importFile(file.files[0]);
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+  drop.ondragleave = () => drop.classList.remove("over");
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); const f = e.dataTransfer.files[0]; if (f) importFile(f); };
+}
+async function importFile(f){
+  const msg = $("#impMsg");
+  msg.innerHTML = '<div class="muted" style="margin-top:10px">讀取中…</div>';
+  try {
+    const book = await readFileToBook(f);
+    const at = ymd(new Date()) + " " + pad(new Date().getHours()) + ":" + pad(new Date().getMinutes());
+    const test = buildData(book, {});
+    if (!test.sessions.length && !test.students.length) throw new Error("檔案裡找不到「課程場次」或「學員名單」分頁（分頁：" + Object.keys(book).join("、") + "）。請對照下方格式說明，或下載範本。");
+    const saved = store.set(JSON.stringify({ name: f.name, at, book }));
+    onBook(book, { source: "local", label: "本機匯入：" + f.name, generatedAt: at });
+    showTab("imp");
+    $("#impMsg").innerHTML = `<div class="ok-l" style="margin-top:10px">✔ 已匯入「${esc(f.name)}」：${DATA.sessions.length} 場次、${DATA.students.length} 位學員。${saved ? "" : "（瀏覽器無法保存，重新整理後需再匯入）"}</div>`;
+  } catch (e) { msg.innerHTML = `<div class="bad-l" style="margin-top:10px">✘ ${esc(e.message)}</div>`; }
+}
+function downloadTemplate(withDemo){
+  if (!window.XLSX) return alert("Excel 元件未載入，請確認網路後重新整理");
+  const demo = demoBook(), wb = XLSX.utils.book_new();
+  ["課程場次","學員名單","選課紀錄","師資","課程清單","課程回饋"].forEach(n => {
+    const rows = withDemo ? demo[n] : [demo[n][0]];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws["!cols"] = rows[0].map((h, i) => ({ wch: Math.max(8, ...rows.map(r => String(r[i] == null ? "" : r[i]).length * 2 + 2)) }));
+    XLSX.utils.book_append_sheet(wb, ws, n);
+  });
+  XLSX.writeFile(wb, withDemo ? "臨床技能課程安排_範例.xlsx" : "臨床技能課程安排_範本.xlsx");
+}
+
+/* =====================================================================
+   範例資料（虛構，僅供示範）
+   ===================================================================== */
+function demoBook(){
+  const y = new Date().getFullYear(), now = new Date();
+  const d = (mOff, day) => { const t = new Date(now.getFullYear(), now.getMonth() + mOff, day); return ymd(t).replace(/-/g, "/"); };
+  const C = ["縫合技巧","導尿管置放","中心靜脈導管置放","腰椎穿刺","氣管內插管","超音波導引靜脈注射"];
+  const T = [["王志明","外科部","主治醫師"],["林雅婷","泌尿科","主治醫師"],["陳建宏","重症醫學部","主治醫師"],["張淑芬","神經內科","主治醫師"],["李國華","麻醉部","主治醫師"],["黃怡君","急診醫學部","主治醫師"]];
+  const sessions = [["課程名稱","梯次","場次","日期","時間","地點","教師","協同教師","名額","對象","教師確認","確認時間","備註"]];
+  const B = ["A","B","C"];
+  C.forEach((c, ci) => B.forEach((b, bi) => {
+    const off = bi * 2 - 3 + (ci % 2);
+    sessions.push([c, b, 1, d(off, 3 + ci * 4), "13:30-15:30", "臨床技能中心 " + (ci % 3 + 1) + " 教室", T[ci][0], ci % 2 ? "" : T[(ci + 2) % 6][0], 6, "PGY1、PGY2",
+      off < 1 ? "是" : (bi === 2 ? "" : "是"), off < 1 ? d(off - 1, 20) : (bi === 2 ? "" : d(0, 1)), ci === 2 ? "請穿著隔離衣" : ""]);
+  }));
+  const N = ["吳承翰","周家瑜","徐子豪","郭品妤","蔡宗翰","許書瑋","鄭雅文","謝孟哲","洪佳穎","曾柏宇","賴思妤","楊凱翔"];
+  const students = [["員編","姓名","級別","梯次","分機"].concat(C)];
+  N.forEach((n, i) => {
+    const b = B[i % 3];
+    students.push(["P" + (y % 100) + String(101 + i), n, i < 6 ? "PGY1" : "PGY2", b, "5" + String(7400 + i)].concat(C.map((c, ci) => (i + ci) % 7 === 0 ? "" : (i === 4 && ci === 1 ? "C梯 場次1" : "場次1"))));
+  });
+  const enroll = [["員編","姓名","課程名稱","梯次","場次","狀態"], ["P" + (y % 100) + "101", N[0], C[0], "A", 1, "正取"]];
+  const faculty = [["姓名","科別","職稱","負責課程","分機","備註"]].concat(T.map((t, i) => [t[0], t[1], t[2], C[i], "5" + (2100 + i), ""]));
+  const courses = [["課程名稱","類別","時數","必修"]].concat(C.map((c, i) => [c, i < 3 ? "基本技能" : "進階技能", 2, i < 4 ? "必修" : "選修"]));
+  const feedback = [["課程名稱","梯次","學員","日期","優點","建議"],
+    [C[0], "A", N[0], d(-3, 5), "模型很逼真，老師示範清楚", "希望練習時間再長一點"],
+    [C[1], "A", N[3], d(-2, 10), "分組人數少，每個人都有操作機會", ""]];
+  return { "課程場次": sessions, "學員名單": students, "選課紀錄": enroll, "師資": faculty, "課程清單": courses, "課程回饋": feedback };
+}
+</script>
+</body>
+</html>

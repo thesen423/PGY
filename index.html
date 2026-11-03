@@ -244,7 +244,7 @@ function mineHtml(){
 function render(){
   const r = $("#root");
   if (S.view === "admin") { r.innerHTML = S.pw ? adminHtml() : loginHtml(); return; }
-  r.innerHTML = heroHtml() + (S.view === "home" ? homeHtml() : mineHtml()) + `<div class="credit">奇美醫院 教學部 編製</div><div class="contact">${esc(CONTACT)}</div><div class="foot"><a data-act="goAdmin">管理者登入</a></div>`;
+  r.innerHTML = heroHtml() + (S.view === "home" ? homeHtml() : mineHtml()) + `<div class="credit">奇美醫院 教學部 編製</div><div class="contact">${esc(CONTACT)}</div><div class="foot"><a href="schedule/">課程安排表</a>　<a data-act="goAdmin">管理者登入</a></div>`;
 }
 
 function regForm(c, err){
