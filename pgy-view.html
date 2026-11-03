@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>PGY 臨床技能課程查詢｜奇美醫院教學部</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22none%22%20stroke%3D%22%235e8a6a%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%3E%3Crect%20x%3D%228%22%20y%3D%2212%22%20width%3D%2248%22%20height%3D%2244%22%20rx%3D%224%22/%3E%3Cpath%20d%3D%22M8%2024h48M20%206v10M44%206v10M22%2040l7%207%2014-14%22/%3E%3C/svg%3E">
+<style>
+:root{--ink:45,45,42;--g:94,138,106;--bg:#f6f4ee;--card:#fbfaf6;--white:#ffffff;--tx:rgb(var(--ink));--sub:rgba(var(--ink),.6);--ln:rgba(var(--ink),.18);--ac:rgb(var(--g));--ac2:rgba(var(--g),.55);--acx:#f6f4ee;--chip:rgba(var(--g),.14);--bad:#b4533f;--badbg:rgba(180,83,63,.12);--warn:#a8792a;--warnbg:rgba(168,121,42,.14);--info:#4f6fa0;--infobg:rgba(79,111,160,.13);--serif:"Times New Roman",Times,"Microsoft JhengHei","微軟正黑體","PingFang TC","Noto Sans TC",serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:236,233,225;--g:147,184,156;--bg:#1b1d1a;--card:#22251f;--white:#262923;--acx:#1b1d1a;--bad:#e08c78;--badbg:rgba(224,140,120,.15);--warn:#dcb167;--warnbg:rgba(220,177,103,.15);--info:#93acd6;--infobg:rgba(147,172,214,.15)}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font:500 15px/1.7 "Microsoft JhengHei","微軟正黑體","PingFang TC","Noto Sans TC",system-ui,sans-serif;letter-spacing:.02em;-webkit-font-smoothing:antialiased}
+.wrap{max-width:960px;margin:0 auto;padding:8px 16px 64px}
+.hero{padding:26px 0 14px}
+.hero .en{font-size:11px;letter-spacing:.3em;color:var(--ac);text-transform:uppercase}
+.hero h1{font-family:var(--serif);font-size:25px;margin:4px 0 0;letter-spacing:.12em}
+.hero p{margin:2px 0 0;color:var(--sub);font-size:13px}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--ln);position:sticky;top:0;background:var(--bg);z-index:5;overflow-x:auto}
+.tabs button{flex:none;background:none;color:var(--sub);border:0;border-radius:0;padding:12px 14px 10px;letter-spacing:.12em;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs button.on{color:var(--tx);border-bottom-color:var(--ac)}
+.card{background:var(--card);border:1.5px solid var(--ln);border-radius:6px;padding:18px;margin:16px 0}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.left{justify-content:flex-start}
+h2{font-family:var(--serif);font-size:19px;margin:0;letter-spacing:.06em}
+h3{font-family:var(--serif);font-size:16px;margin:0 0 8px;letter-spacing:.06em}
+.meta{font-size:12.5px;color:var(--sub)}
+.chip{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:3px;border:1.5px solid var(--ln);white-space:nowrap;color:var(--sub);line-height:1.6}
+.chip.ok{color:var(--ac);border-color:var(--ac2);background:var(--chip)}
+.chip.bad{color:var(--bad);border-color:var(--bad);background:var(--badbg)}
+.chip.warn{color:var(--warn);border-color:var(--warn);background:var(--warnbg)}
+.chip.info{color:var(--info);border-color:var(--info);background:var(--infobg)}
+.chip.dark{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.pill{display:inline-block;font-size:11px;border:1.5px solid var(--ac2);color:var(--ac);border-radius:3px;padding:0 6px}
+.pill.p2{border-color:var(--info);color:var(--info)}
+button,.btn{font:inherit;border:1.5px solid var(--ac);border-radius:4px;padding:9px 16px;background:var(--ac);color:var(--acx);cursor:pointer;letter-spacing:.1em;text-decoration:none;display:inline-block;transition:opacity .15s}
+button:hover,.btn:hover{opacity:.86}button:disabled{opacity:.4;cursor:default}
+.ghost{background:transparent;color:var(--tx);border-color:var(--ln)}
+.outline{background:transparent;color:var(--ac);border-color:var(--ac)}
+.sm{padding:4px 11px;font-size:13px;letter-spacing:.05em}
+label.f{display:block;font-size:12px;color:var(--sub);margin:12px 0 2px;letter-spacing:.12em}
+input{font:inherit;padding:9px 10px;border:1.5px solid var(--ln);border-radius:4px;background:var(--white);color:var(--tx);width:100%}
+input:focus{outline:none;border-color:var(--ac)}
+.grid{display:grid;gap:10px}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr 1fr}
+@media (max-width:560px){.g3{grid-template-columns:1fr 1fr}}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.stat{background:var(--card);border:1.5px solid var(--ln);border-radius:6px;padding:12px 14px}
+.stat b{display:block;font-family:var(--serif);font-size:28px;line-height:1.1;color:var(--ac)}
+.stat span{font-size:12px;color:var(--sub);letter-spacing:.12em}
+.stat.alert b{color:var(--bad)}.stat.inf b{color:var(--info)}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-left:1.5px solid var(--ln);border-top:1.5px solid var(--ln);margin-top:14px}
+.cal>div{border-right:1.5px solid var(--ln);border-bottom:1.5px solid var(--ln);min-height:88px;padding:4px 5px;background:var(--card);overflow:hidden}
+.cal>div.hd{min-height:0;text-align:center;font-size:12px;color:var(--sub);background:transparent;padding:4px}
+.cal>div.out{background:transparent}
+.cal>div.we .dn{color:var(--bad)}
+.cal>div.today{box-shadow:inset 0 0 0 2px var(--ac2)}
+.dn{font-size:12px;color:var(--sub)}
+.ev{display:block;font-size:11.5px;line-height:1.35;border-radius:3px;padding:2px 4px;margin-top:3px;border-left:3px solid var(--ac);background:var(--chip);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.pend{border-left-color:var(--warn);background:var(--warnbg)}
+.ev.done{border-left-color:var(--sub);background:transparent;opacity:.7}
+.day{display:grid;grid-template-columns:4.6em 1fr;gap:10px;padding:12px 0;border-bottom:1.5px solid var(--ln)}
+.day:last-child{border-bottom:0}
+.day .d{font-family:var(--serif);font-size:20px;line-height:1.1;color:var(--ac)}
+.day .d small{display:block;font-family:inherit;font-size:12px;color:var(--sub)}
+.it{padding:2px 0 8px}
+.it+.it{border-top:1px dashed var(--ln);padding-top:8px}
+@media (max-width:640px){.cal{display:none}}
+@media (min-width:641px){.onlym{display:none}}
+.item{padding:12px 0;border-bottom:1.5px solid var(--ln)}
+.item:last-child{border-bottom:0}
+.sess{background:var(--card);border:1.5px solid var(--ln);border-top:4px solid var(--warn);border-radius:6px;padding:16px;margin:14px 0}
+.sess.confirmed{border-top-color:var(--ac)}.sess.done{border-top-color:var(--sub);opacity:.75}.sess.resched{border-top-color:var(--bad)}
+.names{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.names span{font-size:13px;border:1px solid var(--ln);border-radius:3px;padding:1px 8px;background:var(--white)}
+.note{background:var(--warnbg);border-left:3px solid var(--warn);padding:8px 12px;border-radius:3px;font-size:13px;margin-top:10px}
+.note.ok{background:var(--chip);border-left-color:var(--ac)}
+.err{color:var(--bad);font-size:13px;min-height:20px;margin-top:8px}
+.empty{padding:22px;text-align:center;color:var(--sub)}
+.sk{height:120px;border-radius:6px;margin:16px 0;background:linear-gradient(90deg,var(--chip),var(--card),var(--chip));background-size:200% 100%;animation:sh 1.4s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--sub);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 20px;border-radius:4px;font-size:13px;z-index:99;opacity:0;pointer-events:none;transition:.25s;max-width:90vw}
+#toast.show{opacity:1}
+.foot{text-align:center;color:var(--sub);font-size:12px;letter-spacing:.16em;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap" id="root"></div>
+<div id="toast"></div>
+<script src="pgy-config.js"></script>
+<script>
+"use strict";
+const CFG = window.PGY_CONFIG || {};
+const API_URL = String(CFG.api || "").trim();
+const CONTACT = CFG.contact || "教學部";
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const p2 = n => String(n).padStart(2, "0");
+const ymd = d => d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate());
+const TODAY = ymd(new Date());
+const WD = ["日","一","二","三","四","五","六"];
+const md = s => s ? (+s.slice(5, 7)) + "/" + (+s.slice(8, 10)) : "";
+const mdw = s => s ? md(s) + "（" + WD[new Date(s + "T00:00").getDay()] + "）" : "";
+const lvPill = l => l ? `<span class="pill ${l === "PGY2" ? "p2" : ""}">${esc(l)}</span>` : "";
+const store = { get(k){ try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }, set(k, v){ try { localStorage.setItem(k, v); } catch (e) {} } };
+let tt;
+function toast(m){ const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 2600); }
+async function run(fn, ...a){
+  if (!API_URL) throw new Error("查詢系統尚未啟用，請洽教學部");
+  let res;
+  try { res = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ fn, args: a }) }); }
+  catch (e) { throw new Error("無法連線，請檢查網路後再試"); }
+  let j; try { j = await res.json(); } catch (e) { throw new Error("伺服器回應異常，請稍後再試"); }
+  if (j.error) throw new Error(j.error);
+  return j.result;
+}
+const em = e => (e && e.message) ? String(e.message).replace(/^Error:\s*/, "") : "發生錯誤，請稍後再試";
+
+/* ---------- 行事曆 ---------- */
+const CAL_NOTE = "奇美醫院 教學部 PGY 臨床技能課程\n如有問題請洽" + CONTACT;
+const tstamp = (d, t) => d.replace(/-/g, "") + "T" + String(t || "00:00").replace(":", "") + "00";
+function gcalUrl(x){
+  if (!x.date || !x.start) return "";
+  const q = new URLSearchParams({ action: "TEMPLATE", text: x.course + "（臨床技能課程）", dates: tstamp(x.date, x.start) + "/" + tstamp(x.date, x.end || x.start), ctz: "Asia/Taipei", location: x.place || "", details: CAL_NOTE });
+  return "https://calendar.google.com/calendar/render?" + q.toString();
+}
+function icsDownload(x){
+  if (!x.date || !x.start) return toast("課程時間尚未確定");
+  const e = v => String(v || "").replace(/[\\;,]/g, m => "\\" + m).replace(/\n/g, "\\n");
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+  const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//ChiMei//PGYSkills//ZH","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+    "BEGIN:VTIMEZONE","TZID:Asia/Taipei","BEGIN:STANDARD","DTSTART:19700101T000000","TZOFFSETFROM:+0800","TZOFFSETTO:+0800","TZNAME:CST","END:STANDARD","END:VTIMEZONE",
+    "BEGIN:VEVENT","UID:" + tstamp(x.date, x.start) + "-" + Math.random().toString(36).slice(2) + "@chimei-pgy","DTSTAMP:" + stamp,
+    "DTSTART;TZID=Asia/Taipei:" + tstamp(x.date, x.start),"DTEND;TZID=Asia/Taipei:" + tstamp(x.date, x.end || x.start),
+    "SUMMARY:" + e(x.course + "（臨床技能課程）"),"LOCATION:" + e(x.place),"DESCRIPTION:" + e(CAL_NOTE),
+    "BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:" + e("明天有臨床技能課程：" + x.course),"END:VALARM",
+    "BEGIN:VALARM","TRIGGER:-PT1H","ACTION:DISPLAY","DESCRIPTION:" + e("課程一小時後開始：" + x.course),"END:VALARM",
+    "END:VEVENT","END:VCALENDAR"].join("\r\n");
+  try {
+    const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+    const a = document.createElement("a"); a.href = url; a.download = (x.course || "課程") + ".ics"; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 3000); toast("已下載行事曆檔，點開即可加入");
+  } catch (err) { toast("無法下載，請改用 Google 日曆"); }
+}
+const CALS = [];
+function calBtns(x){
+  const g = gcalUrl(x); if (!g) return "";
+  CALS.push(x);
+  return `<div class="acts" style="margin-top:8px"><a class="btn sm outline" href="${esc(g)}" target="_blank" rel="noopener">＋ Google 日曆</a><button class="sm ghost" data-act="ics" data-i="${CALS.length - 1}">＋ iPhone／Outlook</button></div>`;
+}
+
+/* ---------- 狀態 ---------- */
+const S = { tab: ["cal", "student", "teacher"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "cal", month: TODAY.slice(0, 7), cal: {}, calErr: "",
+  emp: store.get("pgy-emp"), stu: null, stuErr: "", stuBusy: false,
+  tname: store.get("pgy-tname"), tpw: "", tea: null, teaErr: "", teaBusy: false, open: {} };
+
+function render(){
+  CALS.length = 0;
+  const body = { cal: calHtml, student: stuHtml, teacher: teaHtml }[S.tab]();
+  $("#root").innerHTML = `<header class="hero"><div class="en">Chi Mei Medical Center · PGY Clinical Skills</div><h1>PGY 臨床技能課程查詢</h1><p>奇美醫院 教學部</p></header>
+    <nav class="tabs">${[["cal","課程月曆"],["student","學生查詢"],["teacher","導師專區"]].map(([k, t]) => `<button class="${S.tab === k ? "on" : ""}" data-act="tab" data-v="${k}">${t}</button>`).join("")}</nav>
+    ${API_URL ? "" : '<div class="note">查詢系統尚未啟用（教學部尚未設定雲端網址）。</div>'}
+    ${body}<div class="foot">奇美醫院 教學部・如有問題請洽 ${esc(CONTACT)}</div>`;
+}
+
+/* ---------- 公開月曆 ---------- */
+async function loadCal(m){
+  if (S.cal[m] || !API_URL) return;
+  try { S.cal[m] = await run("publicCalendar", m); S.calErr = ""; } catch (e) { S.calErr = em(e); }
+  if (S.tab === "cal" && S.month === m) render();
+}
+function calHtml(){
+  const m = S.month, [y, mo] = m.split("-").map(Number), list = S.cal[m];
+  let body;
+  if (S.calErr) body = `<div class="card empty">${esc(S.calErr)}</div>`;
+  else if (!list) body = '<div class="sk"></div>';
+  else {
+    let g = ["一","二","三","四","五","六","日"].map(d => `<div class="hd">${d}</div>`).join("");
+    const lead = (new Date(y, mo - 1, 1).getDay() + 6) % 7, days = new Date(y, mo, 0).getDate();
+    for (let i = 0; i < lead; i++) g += '<div class="out"></div>';
+    for (let d = 1; d <= days; d++) {
+      const ds = m + "-" + p2(d), wd = new Date(y, mo - 1, d).getDay();
+      g += `<div class="${wd === 0 || wd === 6 ? "we" : ""} ${ds === TODAY ? "today" : ""}"><span class="dn">${d}</span>${list.filter(x => x.date === ds).map(x => `<span class="ev ${x.status === "pending" ? "pend" : x.status === "done" ? "done" : ""}" title="${esc(x.course + " " + x.start + "–" + x.end + " " + x.place)}">${esc(x.start)} ${esc(x.course)}</span>`).join("")}</div>`;
+    }
+    for (let i = 0; i < (7 - (lead + days) % 7) % 7; i++) g += '<div class="out"></div>';
+    const dates = [...new Set(list.map(x => x.date))];
+    const days2 = dates.map(d => `<div class="day"><div class="d">${md(d)}<small>週${WD[new Date(d + "T00:00").getDay()]}</small></div><div>${list.filter(x => x.date === d).map(x => `<div class="it">
+      <div class="row"><b>${esc(x.course)}</b>${x.status === "pending" ? '<span class="chip warn">時間待確認</span>' : x.status === "done" ? '<span class="chip">已結束</span>' : '<span class="chip ok">已確認</span>'}</div>
+      <div>${esc(x.start)}–${esc(x.end)}・${esc(x.place || "地點未定")} ${lvPill(x.level)}</div>${x.content ? `<div class="meta">${esc(x.content)}</div>` : ""}</div>`).join("")}</div></div>`).join("");
+    body = `<div class="cal">${g}</div><div class="card">${days2 || '<div class="empty">本月尚無公告的課程</div>'}</div>`;
+  }
+  return `<div class="card"><div class="row"><div class="row left"><button class="sm ghost" data-act="mon" data-d="-1">‹</button><h2 style="min-width:7.5em;text-align:center">${y} 年 ${mo} 月</h2><button class="sm ghost" data-act="mon" data-d="1">›</button></div>
+    <button class="sm ghost" data-act="reloadCal">重新整理</button></div>
+    <div class="legend"><span><i style="background:var(--ac)"></i>已確認</span><span><i style="background:var(--warn)"></i>時間待確認（可能異動）</span><span><i style="background:var(--sub)"></i>已結束</span></div>
+    <div class="meta" style="margin-top:6px">此處只公布課程時間與地點；個人的上課安排請至「學生查詢」。</div></div>${body}`;
+}
+
+/* ---------- 學生查詢 ---------- */
+function stuHtml(){
+  let out = `<div class="card"><h3>用人事號查詢我的課程</h3><div class="meta">只會顯示您本人的訓練紀錄與安排。</div>
+    <form data-form="stu"><label class="f">人事號</label><input id="emp" value="${esc(S.emp)}" autocomplete="off" required>
+    <button style="width:100%;margin-top:12px" ${S.stuBusy ? "disabled" : ""}>${S.stuBusy ? "查詢中…" : "查詢"}</button></form><div class="err">${esc(S.stuErr)}</div></div>`;
+  const r = S.stu; if (!r) return out;
+  const sch = r.items.filter(x => x.k === "sch").sort((a, b) => a.date < b.date ? -1 : 1), miss = r.items.filter(x => x.k === "miss"), done = r.items.filter(x => x.k === "done"), opt = r.items.filter(x => x.k === "opt");
+  out += `<div class="card"><div class="row"><h2>${esc(r.name)}</h2><span>${lvPill(r.level)}</span></div><div class="meta">訓練期間 ${esc(r.start || "?")} ～ ${esc(r.end || "?")}</div>
+    <div class="grid g3" style="margin-top:12px"><div class="stat"><b>${done.length}</b><span>已完成</span></div><div class="stat inf"><b>${sch.length}</b><span>已安排</span></div><div class="stat ${miss.length ? "alert" : ""}"><b>${miss.length}</b><span>尚未安排</span></div></div></div>`;
+  out += `<div class="card"><h3>已安排的課程</h3>${sch.length ? sch.map(x => `<div class="item"><div class="row"><b>${esc(x.course)} ${lvPill(x.level)}</b>${x.status === "confirmed" ? '<span class="chip ok">時間已確認</span>' : '<span class="chip warn">時間待確認，可能異動</span>'}</div>
+      <div style="font-size:16px">${mdw(x.date)}　${esc(x.start)}–${esc(x.end)}</div><div class="meta">地點：${esc(x.place || "未定")}${x.content ? "・" + esc(x.content) : ""}${x.makeup ? "・PGY1 課程補訓" : ""}</div>${calBtns(x)}</div>`).join("") : '<div class="meta">目前沒有已安排的課程。</div>'}</div>`;
+  out += `<div class="card"><h3>尚未安排的必修課程</h3>${miss.length ? miss.map(x => `<div class="item"><b>${esc(x.course)}</b> ${lvPill(x.level)}${x.makeup ? ' <span class="chip warn">PGY1 補訓</span>' : ""}<div class="meta">${esc(x.content || "")}</div></div>`).join("") + '<div class="meta" style="margin-top:8px">教學部會陸續安排，若訓練期間即將結束請主動聯繫。</div>' : '<div class="meta">所有必修課程都已完成或安排 👍</div>'}</div>`;
+  out += `<div class="card"><h3>已完成的課程</h3>${done.length ? done.map(x => `<div class="item row"><span><b>${esc(x.course)}</b> ${lvPill(x.level)}</span><span class="chip ok">✓ ${esc(x.date || "已完成")}</span></div>`).join("") : '<div class="meta">尚無完成紀錄。若您已上過某課程但未列入，請洽教學部。</div>'}</div>`;
+  if (opt.length) out += `<div class="card"><h3>可參加的課程</h3>${opt.map(x => `<div class="item"><b>${esc(x.course)}</b></div>`).join("")}</div>`;
+  return out;
+}
+
+/* ---------- 導師專區 ---------- */
+const TST = { pending: ["warn", "待您確認"], confirmed: ["ok", "已確認"], resched: ["bad", "已建議改期，等待教學部調整"], done: ["", "已完成"] };
+function teaHtml(){
+  let out = `<div class="card"><h3>導師登入</h3><div class="meta">輸入您在排課表上的姓名，即可查看負責的梯次與學生名單，並直接確認時間。</div>
+    <form data-form="tea"><div class="grid g2"><div><label class="f">姓名</label><input id="tname" value="${esc(S.tname)}" required autocomplete="name"></div>
+    <div><label class="f">導師密碼（教學部有提供才需填）</label><input id="tpw" type="password" value="${esc(S.tpw)}" autocomplete="current-password"></div></div>
+    <button style="width:100%;margin-top:12px" ${S.teaBusy ? "disabled" : ""}>${S.teaBusy ? "查詢中…" : "查看我的課程"}</button></form><div class="err">${esc(S.teaErr)}</div></div>`;
+  const r = S.tea; if (!r) return out;
+  if (!r.sessions.length) return out + `<div class="card empty">${esc(r.name)} 目前沒有待確認或近期的課程。<br>若名字與排課表不同（例如全名／別名），請洽教學部。</div>`;
+  const todo = r.sessions.filter(x => x.status === "pending" && !x.reply).length;
+  out += `<div class="row" style="margin-top:10px"><h2>${esc(/(醫師|老師|主任|教授|醫生)$/.test(r.name) ? r.name : r.name + " 老師")}的課程</h2>${todo ? `<span class="chip warn">${todo} 梯待確認</span>` : '<span class="chip ok">皆已回覆</span>'}</div>`;
+  out += r.sessions.map(x => {
+    const st = x.reply && x.status !== "done" ? ["info", "已回覆，待教學部更新"] : TST[x.status] || ["", x.status], over = x.cap && x.students.length > x.cap;
+    const rep = x.reply ? `<div class="note ${x.reply.ok ? "ok" : ""}">您已於 ${esc(x.reply.time.slice(5, 16))} 回覆：${x.reply.ok ? "✓ 時間可以" : `建議改至 ${mdw(x.reply.date)} ${esc(x.reply.start)}–${esc(x.reply.end)}`}${x.reply.note ? "（" + esc(x.reply.note) + "）" : ""}，教學部處理後會更新狀態。</div>` : "";
+    const prop = x.status === "resched" && x.proposal && !x.reply ? `<div class="note">您先前建議改至 ${mdw(x.proposal.date)} ${esc(x.proposal.start)}–${esc(x.proposal.end)}，教學部調整後會再請您確認。</div>` : "";
+    const canReply = x.status !== "done";
+    const form = S.open[x.id] ? `<div class="card" style="margin:12px 0 0;background:var(--white)"><b>建議改期</b>
+      <div class="grid g3"><div><label class="f">建議日期</label><input type="date" id="d_${x.id}" value="${esc(x.date)}"></div><div><label class="f">開始</label><input type="time" id="s_${x.id}" value="${esc(x.start)}"></div><div><label class="f">結束</label><input type="time" id="e_${x.id}" value="${esc(x.end)}"></div></div>
+      <label class="f">說明（選填）</label><input id="n_${x.id}" placeholder="例：當週出國，可改隔週同時段">
+      <div class="acts"><button class="ghost sm" data-act="closeAlt" data-id="${x.id}">取消</button><button class="sm" data-act="sendAlt" data-id="${x.id}">送出建議時間</button></div></div>` : "";
+    return `<div class="sess ${x.status}"><div class="row"><h2>${esc(x.course)} ${lvPill(x.level)}</h2><span class="chip ${st[0]}">${st[1]}</span></div>
+      <div style="font-size:17px;margin-top:4px">${mdw(x.date)}　${esc(x.start)}–${esc(x.end)}</div><div class="meta">地點：${esc(x.place || "未定")}${x.content ? "・" + esc(x.content) : ""}</div>
+      <div class="meta" style="margin-top:10px">學員名單（${x.students.length} 人${x.cap ? "／上限 " + x.cap : ""}${over ? "，已超過上限" : ""}）</div>
+      <div class="names">${x.students.map(s => `<span>${esc(s.name)} <span class="meta">${esc(s.level)}</span></span>`).join("") || '<span class="meta" style="border:0;background:none">尚未安排學員</span>'}</div>
+      ${rep}${prop}
+      ${canReply && !S.open[x.id] ? `<div class="acts">${x.status !== "confirmed" || x.reply ? `<button class="sm" data-act="okSes" data-id="${x.id}">✓ 時間可以</button>` : ""}<button class="sm ghost" data-act="openAlt" data-id="${x.id}">${x.status === "confirmed" ? "需要改期" : "✗ 無法，建議改期"}</button></div>` : ""}
+      ${form}${x.status === "confirmed" ? calBtns(x) : ""}</div>`;
+  }).join("");
+  return out;
+}
+async function teaLoad(quiet){
+  S.teaBusy = true; if (!quiet) { S.teaErr = ""; render(); }
+  try { S.tea = await run("teacherLookup", S.tname, S.tpw); store.set("pgy-tname", S.tname); S.teaErr = ""; }
+  catch (e) { S.teaErr = em(e); S.tea = null; }
+  S.teaBusy = false; render();
+}
+async function teaReply(id, ok){
+  const x = S.tea.sessions.find(s => s.id === id); if (!x) return;
+  const v = k => ($("#" + k + "_" + id) || {}).value || "";
+  if (!ok && !v("d")) return toast("請選擇建議日期");
+  $$("button[data-id='" + id + "']").forEach(b => b.disabled = true);
+  try {
+    await run("teacherReply", S.tname, S.tpw, id, ok, v("d"), v("s"), v("e"), v("n"));
+    S.open[id] = false; toast(ok ? "已回覆：時間可以，謝謝！" : "已送出建議時間，謝謝！");
+    await teaLoad(true);
+  } catch (e) { toast(em(e)); render(); }
+}
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+/* ---------- 事件 ---------- */
+document.addEventListener("submit", async e => {
+  e.preventDefault(); const f = e.target.dataset.form;
+  if (f === "stu") {
+    S.emp = $("#emp").value.trim(); if (!S.emp) return;
+    S.stuBusy = true; S.stuErr = ""; render();
+    try { S.stu = await run("studentLookup", S.emp); store.set("pgy-emp", S.emp); } catch (x) { S.stu = null; S.stuErr = em(x); }
+    S.stuBusy = false; render();
+  }
+  if (f === "tea") { S.tname = $("#tname").value.trim(); S.tpw = $("#tpw").value; if (S.tname) teaLoad(); }
+});
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-act]"); if (!t) return;
+  const a = t.dataset.act, id = t.dataset.id;
+  if (a === "tab") { S.tab = t.dataset.v; history.replaceState(null, "", "#" + S.tab); render(); if (S.tab === "cal") loadCal(S.month); return; }
+  if (a === "mon") { const [y, m] = S.month.split("-").map(Number), d = new Date(y, m - 1 + +t.dataset.d, 1); S.month = d.getFullYear() + "-" + p2(d.getMonth() + 1); render(); loadCal(S.month); return; }
+  if (a === "reloadCal") { delete S.cal[S.month]; render(); loadCal(S.month); return; }
+  if (a === "ics") return icsDownload(CALS[+t.dataset.i]);
+  if (a === "okSes") return teaReply(id, true);
+  if (a === "openAlt") { S.open[id] = true; return render(); }
+  if (a === "closeAlt") { S.open[id] = false; return render(); }
+  if (a === "sendAlt") return teaReply(id, false);
+});
+render();
+if (S.tab === "cal") loadCal(S.month);
+</script>
+</body>
+</html>

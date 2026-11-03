@@ -124,6 +124,7 @@ code.k{word-break:break-all;font-size:11px;background:var(--white);border:1px so
 <div class="wrap" id="root"></div>
 <div id="toast"></div>
 <div class="mask" id="mask" hidden><div class="sheet" id="sheet"></div></div>
+<script src="pgy-config.js"></script>
 <script>
 "use strict";
 /* ================= 基本工具 ================= */
@@ -187,9 +188,125 @@ function loadDB(){
   return emptyDB();
 }
 let DB = loadDB();
-function save(){
-  DB.updated = new Date().toLocaleString("zh-TW", { hour12: false });
+function save(fromCloud){
+  if (!fromCloud) DB.updated = new Date().toLocaleString("zh-TW", { hour12: false });
   try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch (e) { toast("無法儲存到瀏覽器，請匯出備份"); }
+  if (!fromCloud && API_URL) { CL.edits++; setDirty(true); schedulePush(); }
+}
+
+/* ================= 雲端同步（Google Apps Script） ================= */
+const CFG = window.PGY_CONFIG || {};
+const API_URL = String(CFG.api || "").trim();
+const lsGet = k => { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } };
+const lsSet = (k, v) => { try { if (v === "" || v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
+const CL = { pw: "", ver: +lsGet("pgy-cloud-ver") || 0, dirty: lsGet("pgy-dirty") === "1", st: API_URL ? "out" : "off", msg: "", edits: 0, timer: null, busy: false, last: "" };
+function setDirty(v){ CL.dirty = v; lsSet("pgy-dirty", v ? "1" : ""); }
+function setVer(v){ CL.ver = v; lsSet("pgy-cloud-ver", String(v)); }
+async function run(fn, ...a){
+  let res;
+  try { res = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ fn, args: a }) }); }
+  catch (e) { throw new Error("無法連線到雲端，請檢查網路"); }
+  let j; try { j = await res.json(); } catch (e) { throw new Error("雲端回應異常（請確認 Apps Script 已部署且存取權為「所有人」）"); }
+  if (j.error) throw new Error(j.error);
+  return j.result;
+}
+const em = e => (e && e.message) ? String(e.message).replace(/^Error:\s*/, "") : "發生錯誤";
+function cloudChip(){
+  const m = {
+    off:  ["", "僅存本機"],
+    out:  ["warn", "☁ 未登入雲端"],
+    sync: ["info", "☁ 同步中…"],
+    ok:   ["ok", "☁ 已同步" + (CL.last ? " " + CL.last.slice(11, 16) : "")],
+    err:  ["bad", "☁ 同步失敗"],
+    conflict: ["bad", "☁ 版本衝突"]
+  }[CL.st] || ["", ""];
+  const pend = CL.st === "out" && CL.dirty ? "・有未上傳變更" : "";
+  return `<button class="sm ghost" data-act="cloudBtn" title="${esc(CL.msg)}"><span class="chip ${m[0]}" style="border:0;background:none;padding:0">${m[1]}${pend}</span></button>`;
+}
+function renderCloud(){ const el = $("#cloud"); if (el) el.innerHTML = cloudChip(); }
+function schedulePush(){
+  if (!CL.pw) { CL.st = "out"; renderCloud(); return; }
+  clearTimeout(CL.timer); CL.timer = setTimeout(push, 1200);
+}
+async function push(force){
+  if (!CL.pw) return;
+  if (CL.busy) { schedulePush(); return; }
+  CL.busy = true; CL.st = "sync"; renderCloud();
+  const startEdits = CL.edits;
+  try {
+    const r = await run("adminSave", CL.pw, DB, CL.ver, !!force);
+    setVer(r.ver); CL.last = r.time; CL.st = "ok"; CL.msg = "";
+    if (CL.edits === startEdits) setDirty(false); else schedulePush();
+  } catch (e) {
+    const m = em(e);
+    if (m === "CONFLICT") { CL.st = "conflict"; CL.msg = "雲端有較新的版本"; conflictSheet(); }
+    else { CL.st = "err"; CL.msg = m; toast("雲端同步失敗：" + m); if (/密碼/.test(m)) { CL.pw = ""; lsSet("pgy-pw", ""); } }
+  }
+  CL.busy = false; renderCloud();
+}
+function applyCloudReplies(list){
+  let n = 0;
+  (list || []).filter(r => r.seq > (DB.replySeq || 0)).sort((a, b) => a.seq - b.seq).forEach(r => {
+    DB.replySeq = Math.max(DB.replySeq || 0, r.seq);
+    const x = session(r.sid); if (!x || ["done", "cancel"].includes(x.status)) return;
+    if (r.ok) { x.status = "confirmed"; x.proposal = null; } else { x.status = "resched"; x.proposal = { date: r.date, start: r.start, end: r.end, note: r.note }; }
+    if (r.note) x.note = (x.note ? x.note + "；" : "") + "導師：" + r.note;
+    n++;
+  });
+  return n;
+}
+async function cloudLogin(pw, remember, quiet){
+  CL.st = "sync"; CL.got = 0; renderCloud();
+  let r;
+  try { r = await run("adminLoad", pw); }
+  catch (e) { CL.st = CL.pw ? "err" : "out"; CL.msg = em(e); renderCloud(); if (/密碼/.test(CL.msg)) lsSet("pgy-pw", ""); if (!quiet) toast(CL.msg); return false; }
+  CL.pw = pw; if (remember) lsSet("pgy-pw", pw);
+  if (!r.db) {
+    setVer(r.ver); await push(); toast("雲端尚無資料，已將本機資料上傳");
+  } else if (CL.dirty && CL.ver !== r.ver) {
+    CL.cloud = r; CL.st = "conflict"; renderCloud(); conflictSheet(); return true;
+  } else if (CL.dirty) {
+    setVer(r.ver);
+    const n = applyCloudReplies(r.replies); CL.got = n; if (n) { save(); toast(`收到 ${n} 筆導師回覆，已更新梯次狀態`); }
+    await push();
+  } else {
+    DB = r.db; setVer(r.ver); save(true); setDirty(false);
+    const n = applyCloudReplies(r.replies); CL.got = n;
+    if (n) { save(); toast(`收到 ${n} 筆導師回覆，已更新梯次狀態`); }
+    CL.st = "ok"; CL.last = CL.last || new Date().toLocaleString("sv-SE");
+  }
+  render();
+  return true;
+}
+function conflictSheet(){
+  sheet(`<h3>雲端與本機資料不一致</h3><div class="meta">這台電腦有尚未上傳的變更，但雲端資料也在其他地方被更新過（例如另一台電腦）。請選擇要保留哪一份：</div>
+    <div class="acts"><button data-act="useCloud" style="flex:1">使用雲端版本<br><span style="font-size:12px;opacity:.8">捨棄本機未上傳的變更</span></button>
+    <button class="ghost" data-act="forceLocal" style="flex:1">以本機覆蓋雲端<br><span style="font-size:12px;opacity:.8">雲端的較新變更會遺失</span></button></div>
+    <div class="meta" style="margin-top:10px">不確定的話，建議先到「匯入／備份」匯出本機備份，再選「使用雲端版本」。導師回覆不受影響，會在同步時自動套用。</div>
+    <div class="acts end"><button class="ghost" data-act="closeSheet">稍後再說</button></div>`, true);
+}
+function loginSheet(err){
+  sheet(`<form data-form="cloud"><h3>登入雲端同步</h3><div class="meta">輸入在 Apps Script 設定的管理密碼。登入後，所有變更會自動存到 Google 試算表，學生與導師的查詢頁也會即時更新。</div>
+    <label class="f">管理密碼</label><input type="password" name="pw" required autocomplete="current-password">
+    <label class="row left" style="gap:6px;margin-top:10px"><input type="checkbox" name="remember" checked>在這台電腦記住密碼</label>
+    <div class="bad" style="min-height:20px;margin-top:6px">${esc(err || "")}</div>
+    <div class="acts end"><button type="button" class="ghost" data-act="closeSheet">取消</button><button type="submit">登入並同步</button></div></form>`, true);
+}
+function cloudMenu(){
+  if (CL.st === "off") return sheet(`<h3>尚未設定雲端</h3><div class="meta">目前資料只存在這台電腦的瀏覽器。要讓學生、導師透過查詢頁查看，請依 <b>apps-script/設定說明.md</b> 部署 Apps Script，並把網址填入 <b>pgy-config.js</b>。</div><div class="acts end"><button data-act="closeSheet">知道了</button></div>`, true);
+  if (!CL.pw) return loginSheet();
+  if (CL.st === "conflict") return conflictSheet();
+  sheet(`<h3>雲端同步</h3><div class="meta">狀態：${cloudChip()}　版本 v${CL.ver}${CL.msg ? "<br>" + esc(CL.msg) : ""}</div>
+    <div class="meta" style="margin-top:6px">每次修改後約 1 秒會自動上傳。按「立即同步」可下載最新資料並套用導師在查詢頁送出的回覆。</div>
+    <div class="acts end"><button class="danger" data-act="cloudOut" style="margin-right:auto">登出雲端</button><button class="ghost" data-act="closeSheet">關閉</button><button data-act="cloudSync">立即同步</button></div>`, true);
+}
+async function cloudSync(){
+  if (!CL.pw) return loginSheet();
+  closeSheet();
+  if (CL.dirty) await push();
+  if (CL.st === "conflict") return;
+  const ok = await cloudLogin(CL.pw, false);
+  if (ok && CL.st === "ok" && !CL.got) toast("已與雲端同步，沒有新的導師回覆");
 }
 const course = id => DB.courses.find(c => c.id === id);
 const student = id => DB.students.find(s => s.id === id);
@@ -270,7 +387,7 @@ function render(){
   if (location.hash.startsWith("#confirm=")) return renderConfirm();
   const body = { dash: dashHtml, month: monthHtml, courses: coursesHtml, students: studentsHtml, progress: progressHtml, data: dataHtml }[S.tab]();
   $("#root").innerHTML = `<header class="hero"><div><div class="en">Chi Mei Medical Center · PGY Clinical Skills</div><h1>PGY 臨床技能課程排課</h1><p>奇美醫院 教學部　課程安排・導師確認・訓練進度追蹤</p></div>
-    <div class="meta">${DB.updated ? "最後儲存：" + esc(DB.updated) : "尚未儲存任何變更"}</div></header>
+    <div style="text-align:right"><span id="cloud">${cloudChip()}</span>${API_URL ? ` <a class="lnk meta" href="pgy-view.html" target="_blank" rel="noopener">查詢頁 ↗</a>` : ""}<div class="meta">${DB.updated ? "最後修改：" + esc(DB.updated) : "尚未儲存任何變更"}</div></div></header>
     <nav class="tabs">${TABS.map(([k, t]) => `<button class="${S.tab === k ? "on" : ""}" data-act="tab" data-v="${k}">${t}</button>`).join("")}</nav>
     ${body}<div class="foot">資料儲存在此瀏覽器・請定期至「匯入／備份」匯出備份</div>`;
 }
@@ -358,7 +475,9 @@ function monthHtml(){
     <div class="legend">${Object.keys(STATUS).map(k => `<span><i class="dot lg st-${k}"></i>${STATUS[k].t} ${counts[k] || 0}</span>`).join("")}</div></div>
     <div class="row left" style="margin-bottom:-6px"><button class="sm ${S.sv === "cal" ? "" : "ghost"}" data-act="sv" data-v="cal">月曆</button><button class="sm ${S.sv === "list" ? "" : "ghost"}" data-act="sv" data-v="list">清單</button><span class="meta">點日期空白處可直接新增梯次，點課程可編輯／調整時間</span></div>
     ${S.sv === "cal" ? `<div class="cal" style="margin-top:16px">${cal}</div>` : `<div class="card">${list.length ? sesTable(list) : '<div class="empty">本月尚無梯次，可按「預排本月課程」自動產生草稿。</div>'}</div>`}
-    <div class="card"><h3>導師時間確認</h3><div class="meta" style="margin-bottom:8px">流程：預排（草擬）→ 送導師確認 → 傳連結給導師 → 導師勾選「可以／建議改期」並回傳回覆碼 → 在下方貼上回覆碼更新狀態。</div>${teach}
+    <div class="card"><div class="row"><h3>導師時間確認</h3>${CL.pw ? '<button class="sm" data-act="cloudSync">↻ 檢查導師回覆</button>' : ""}</div>
+      ${API_URL ? `<div class="note" style="margin:0 0 10px">已啟用雲端：梯次改為「待導師確認」後，導師可直接到 <a class="lnk" href="pgy-view.html" target="_blank" rel="noopener">查詢頁 → 導師專區</a> 輸入姓名確認或建議改期，按「檢查導師回覆」即可套用。下方的連結／回覆碼方式仍可作為備用。</div>` : ""}
+      <div class="meta" style="margin-bottom:8px">流程：預排（草擬）→ 送導師確認 → 傳連結給導師 → 導師勾選「可以／建議改期」並回傳回覆碼 → 在下方貼上回覆碼更新狀態。</div>${teach}
       <label class="f">貼上導師回覆碼（可一次貼多位）</label><textarea id="replyBox" style="min-height:70px" placeholder="PGYR:xxxxxxxx"></textarea>
       <div class="acts"><button class="sm" data-act="applyReply">套用導師回覆</button></div></div>`;
 }
@@ -495,6 +614,10 @@ function dataHtml(){
     <div class="card" style="margin:0"><h3>3. 備份與還原</h3>
       <div class="meta">所有資料存在這台電腦的瀏覽器中。換電腦或與其他承辦人交接時，請匯出備份檔，再於另一台電腦還原。</div>
       <div class="acts"><button data-act="backup">匯出完整備份（JSON）</button><button class="ghost" data-act="restore">從備份還原</button><input type="file" id="fileBak" accept=".json" hidden></div></div>
+    <div class="card" style="margin:0"><h3>雲端同步（Google 試算表）</h3>
+      ${API_URL ? `<div class="meta">狀態：${cloudChip()}　版本 v${CL.ver}<br>學生、導師查詢頁：<a class="lnk" href="pgy-view.html" target="_blank" rel="noopener">pgy-view.html</a>（可把網址分享給學生與導師）</div>
+        <div class="acts">${CL.pw ? '<button data-act="cloudSync">立即同步</button><button class="danger" data-act="cloudOut">登出雲端</button>' : '<button data-act="cloudLogin">登入雲端</button>'}</div>`
+      : '<div class="meta">尚未設定。請依 <b>apps-script/設定說明.md</b> 部署 Apps Script，並把網址填入 <b>pgy-config.js</b>，即可多台電腦共用資料，並開放學生、導師查詢。</div>'}</div>
     <div class="card" style="margin:0"><h3>4. 試用與重設</h3>
       <div class="meta">載入示範學員與梯次可快速體驗功能（會覆蓋目前資料）。</div>
       <div class="acts"><button class="ghost" data-act="demo">載入示範資料</button><button class="danger" data-act="reset">清除全部資料</button></div>
@@ -754,11 +877,17 @@ document.addEventListener("change", e => {
   if (t.name && t.name.startsWith("r") && t.dataset.i != null) { const al = $("#alt" + t.dataset.i); if (al) al.hidden = t.value === "1"; }
   if (id === "fileStu" && t.files[0]) { const r = new FileReader(); r.onload = () => { $("#impStu").value = r.result; toast("已讀入檔案，請按「匯入學員」"); }; r.readAsText(t.files[0], "utf-8"); }
   if (id === "fileBak" && t.files[0]) { const r = new FileReader(); r.onload = async () => {
-    try { const j = JSON.parse(r.result); if (!j.courses || !j.students) throw 0; if (!(await ask("還原會覆蓋目前所有資料，確定嗎？", "還原"))) return; DB = j; save(); render(); toast("已還原備份"); } catch (x) { toast("備份檔格式錯誤"); } t.value = ""; };
+    try { const j = JSON.parse(r.result); if (!j.courses || !j.students) throw 0; if (!(await ask(`還原會覆蓋目前所有資料${CL.pw ? "（含雲端）" : ""}，確定嗎？`, "還原"))) return; DB = j; save(); render(); toast("已還原備份"); } catch (x) { toast("備份檔格式錯誤"); } t.value = ""; };
     r.readAsText(t.files[0], "utf-8"); }
 });
 document.addEventListener("submit", e => {
   e.preventDefault(); const f = e.target, fd = new FormData(f), g = k => String(fd.get(k) || "").trim();
+  if (f.dataset.form === "cloud") {
+    const pw = g("pw"), rem = !!fd.get("remember");
+    f.querySelector("[type=submit]").disabled = true;
+    cloudLogin(pw, rem).then(ok => { if (ok) { if (CL.st !== "conflict") { closeSheet(); toast("已登入雲端並同步"); } } else loginSheet(CL.msg); });
+    return;
+  }
   if (f.dataset.form === "course") {
     const o = { name: g("name"), level: g("level"), content: g("content"), place: g("place"), cap: Math.max(0, parseInt(g("cap")) || 0), capFlex: !!fd.get("capFlex"), audience: g("audience"), ugy: !!fd.get("ugy"), instructor: g("instructor"), start: g("start"), end: g("end"), note: g("note"), active: !!fd.get("active") };
     if (DB.courses.some(c => c.name === o.name && c.id !== g("id"))) return toast("已有同名課程");
@@ -779,6 +908,12 @@ document.addEventListener("click", async e => {
   const a = t.dataset.act, id = t.dataset.id;
   if (a === "cOk" || a === "cNo") { const r = confirmRes; confirmRes = null; closeSheet(); if (r) r(a === "cOk"); return; }
   if (a === "closeSheet") return closeSheet();
+  if (a === "cloudBtn") return cloudMenu();
+  if (a === "cloudLogin") return loginSheet();
+  if (a === "cloudSync") return cloudSync();
+  if (a === "cloudOut") { CL.pw = ""; lsSet("pgy-pw", ""); CL.st = "out"; closeSheet(); render(); toast("已登出雲端（資料仍保留在本機）"); return; }
+  if (a === "useCloud") { closeSheet(); setDirty(false); const pw = CL.pw; if (CL.cloud) { const r = CL.cloud; CL.cloud = null; DB = r.db; setVer(r.ver); save(true); const n = applyCloudReplies(r.replies); if (n) save(); CL.st = "ok"; render(); toast("已改用雲端版本"); } else await cloudLogin(pw, false); return; }
+  if (a === "forceLocal") { closeSheet(); CL.cloud = null; await push(true); render(); if (CL.st === "ok") toast("已以本機資料覆蓋雲端"); return; }
   if (a === "tab") { closeSheet(); S.tab = t.dataset.v; render(); window.scrollTo(0, 0); return; }
   if (a === "sv") { S.sv = t.dataset.v; return render(); }
   if (a === "mon") { const [y, m] = S.month.split("-").map(Number), d = new Date(y, m - 1 + +t.dataset.d, 1); S.month = d.getFullYear() + "-" + p2(d.getMonth() + 1); return render(); }
@@ -832,11 +967,12 @@ document.addEventListener("click", async e => {
   if (a === "tplStu") { download("PGY學員名單範本.csv", toCsv([["人事號","姓名","級別","訓練開始","訓練結束","已訓練課程","備註"],["A12345","王小明","PGY1","2026/8/1","2027/7/31","急救、ALS_TRM",""],["A12346","林小華","PGY2","2025/8/1","2026/7/31","急救、CVC放置_echo",""]])); return; }
   if (a === "backup") { download(`PGY排課備份_${TODAY}.json`, JSON.stringify(DB, null, 1), "application/json"); toast("已匯出備份"); return; }
   if (a === "restore") return $("#fileBak").click();
-  if (a === "demo") { if (DB.students.length && !(await ask("載入示範資料會覆蓋目前所有資料，確定嗎？", "載入"))) return; DB = demoData(); save(); S.tab = "dash"; render(); toast("已載入示範資料"); return; }
-  if (a === "reset") { if (!(await ask("清除全部資料（學員、梯次、紀錄，課程恢復預設）？建議先匯出備份。", "清除"))) return; DB = emptyDB(); save(); render(); toast("已清除"); return; }
+  if (a === "demo") { if ((DB.students.length || CL.pw) && !(await ask(`載入示範資料會覆蓋目前所有資料${CL.pw ? "（含雲端！）" : ""}，確定嗎？`, "載入"))) return; DB = demoData(); save(); S.tab = "dash"; render(); toast("已載入示範資料"); return; }
+  if (a === "reset") { if (!(await ask(`清除全部資料（學員、梯次、紀錄，課程恢復預設）${CL.pw ? "，雲端資料也會一併清除" : ""}？建議先匯出備份。`, "清除"))) return; DB = emptyDB(); save(); render(); toast("已清除"); return; }
 });
 
 render();
+if (API_URL && lsGet("pgy-pw")) cloudLogin(lsGet("pgy-pw"), false, true);
 </script>
 </body>
 </html>
