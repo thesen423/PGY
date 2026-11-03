@@ -131,7 +131,7 @@
    3. DATA_FILE：與本頁放在同一資料夾的 Excel 檔（上傳到 GitHub 即可更新）
    4. 都沒有時顯示範例資料
    ===================================================================== */
-const GAS_URL = "";                 /* 例："https://script.google.com/macros/s/xxxx/exec" */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyfIld7w6RuHER6Jmyyr5ufuaMoFk7BXRgdyMbKIpC19m68W57Ckg7zKcNoRmMDrBZ0/exec";
 const DATA_FILE = "data.xlsx";      /* 不使用請改成 "" */
 const LS_KEY = "pgy_skill_schedule_import_v1";
 
@@ -172,7 +172,7 @@ const COLS = {
 };
 const BATCH_COLORS = ["#4472C4","#2e9e5b","#d98800","#9b59b6","#17a2a2","#c0392b","#7f8c8d","#e67e22"];
 
-let DATA = null, GZOOM = 1, SOURCE = "";
+let DATA = null, GZOOM = 1, SOURCE = "", GAS_ERR = "";
 const COPY = [];
 const $ = s => document.querySelector(s);
 const esc = t => String(t == null ? "" : t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -397,16 +397,20 @@ function renderAll(){
 }
 function renderBanner(){
   let h = "";
-  if (SOURCE === "local") h = `<div class="banner"><span>目前顯示的是<b>本機匯入</b>的資料（只有這台電腦看得到）。</span><button class="btn ghost" onclick="clearLocal()">改回共用資料</button></div>`;
-  else if (SOURCE === "demo") h = `<div class="banner"><span>目前顯示的是<b>範例資料</b>。請到「匯入資料」分頁上傳新的課程試算表。</span><button class="btn ghost" onclick="showTab('imp')">前往匯入</button></div>`;
+  if (SOURCE === "local") h += `<div class="banner"><span>目前顯示的是<b>本機匯入</b>的資料（只有這台電腦看得到）。</span><button class="btn ghost" onclick="clearLocal()">改回共用資料</button></div>`;
+  if (GAS_ERR && SOURCE !== "local") h += `<div class="banner"><span>⚠ 無法讀取 Google 試算表（${esc(GAS_ERR)}），目前顯示的不是試算表內容。請確認 Apps Script 已部署、存取權為「任何人」。</span><button class="btn ghost" onclick="location.reload()">重新整理</button></div>`;
+  if (SOURCE === "demo") h += `<div class="banner"><span>目前顯示的是<b>範例資料</b>。請到「匯入資料」分頁上傳新的課程試算表。</span><button class="btn ghost" onclick="showTab('imp')">前往匯入</button></div>`;
   $("#banner").innerHTML = h;
 }
 async function load(){
   const saved = store.get();
   if (saved) { try { const o = JSON.parse(saved); return onBook(o.book, { source: "local", label: "本機匯入：" + o.name, generatedAt: o.at }); } catch (e) { store.del(); } }
   if (GAS_URL && GAS_URL.indexOf("http") === 0) {
-    try { const d = await loadGas(); return onBook(d.sheets, { source: "gas", label: "Google 試算表", generatedAt: d.generatedAt }); }
-    catch (e) { console.warn(e); }
+    try {
+      const d = await loadGas();
+      if (!d || !d.sheets) throw new Error(d && d.error ? d.error : "回傳格式不正確");
+      return onBook(d.sheets, { source: "gas", label: "Google 試算表", generatedAt: d.generatedAt });
+    } catch (e) { console.warn(e); GAS_ERR = e.message || "連線失敗"; }
   }
   if (DATA_FILE && window.XLSX) {
     try {
