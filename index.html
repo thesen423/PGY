@@ -106,6 +106,42 @@ input::placeholder{font-weight:700}
 .btn-link{display:inline-block;border:2px solid var(--ac);color:var(--ac);background:transparent;border-radius:3px;padding:6px 14px;font-size:13px;letter-spacing:.1em;text-decoration:none}
 .contact{text-align:center;color:var(--sub);font-size:12px;letter-spacing:.16em;margin-top:6px}
 .mv{padding:6px 10px;letter-spacing:0}
+/* ===== 動態與按鈕回饋 ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}}
+@keyframes grow{from{width:0}}
+@keyframes rip{to{transform:scale(2.6);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(var(--g),.55)}70%{box-shadow:0 0 0 7px rgba(var(--g),0)}100%{box-shadow:0 0 0 0 rgba(var(--g),0)}}
+@keyframes stampIn{0%{transform:scale(1.9) rotate(-5deg);opacity:0}60%{transform:scale(.94) rotate(-5deg);opacity:1}100%{transform:scale(1) rotate(-5deg)}}
+.hero>*{animation:fadeUp .7s cubic-bezier(.2,.7,.2,1) both}
+.hero>*:nth-child(2){animation-delay:.06s}.hero>*:nth-child(3){animation-delay:.12s}.hero>*:nth-child(4){animation-delay:.18s}.hero>*:nth-child(5){animation-delay:.24s}.hero>*:nth-child(6){animation-delay:.3s}
+.tabs{animation:fade .6s .25s both}
+.course,.card{animation:fadeUp .55s cubic-bezier(.2,.7,.2,1) both;transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+.bar i{animation:grow 1.1s cubic-bezier(.2,.7,.2,1) .35s both}
+.chip.ok::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:2px;animation:pulse 1.8s infinite}
+.stamp{animation:stampIn .55s cubic-bezier(.2,.8,.3,1.25) .1s both}
+.mask:not([hidden]){animation:fade .2s ease}
+#toast{transform:translate(-50%,14px)}#toast.show{transform:translate(-50%,0)}
+.tabs button{transition:color .25s,border-color .35s}
+input,select,textarea{transition:border-color .25s}
+button,.btn-link{position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:transform .14s ease,background-color .2s,color .2s,border-color .2s,box-shadow .25s,opacity .2s}
+button:hover{opacity:1}
+button:active:not(:disabled),.btn-link:active{transform:scale(.96)}
+button:focus-visible,.btn-link:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+.rip{position:absolute;border-radius:50%;background:currentColor;opacity:.28;transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+button.busy{opacity:.85}
+button.busy::before{content:"";display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;margin-right:8px;vertical-align:-1px;animation:spin .7s linear infinite}
+@media (hover:hover){
+  button:not(:disabled):not(.ghost):not(.danger):hover{box-shadow:0 8px 18px rgba(var(--g),.28);transform:translateY(-1px)}
+  .ghost:not(:disabled):hover{border-color:var(--ac);color:var(--ac)}
+  .danger:not(:disabled):hover{border-color:var(--tx)}
+  .tabs button:hover{box-shadow:none !important;transform:none !important;color:var(--tx)}
+  .btn-link:hover{background:var(--ac);color:var(--acx)}
+  .course.is-open:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(var(--ink),.08)}
+}
+.still,.still>*{animation:none !important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
 </style>
 </head>
 <body>
@@ -203,11 +239,12 @@ async function load(){
 }
 
 function heroHtml(){
+  const still = S.heroDone ? " still" : ""; S.heroDone = true;
   const cs = S.courses || [], open = cs.filter(c => c.open);
   const seats = open.reduce((a, c) => a + Math.max(c.cap - c.count, 0), 0);
-  return `<div class="hero"><div class="mark">${STETH}</div><div class="en">Chi Mei Medical Center</div><h1><span class="yr">${YEAR}</span>臨床技能課程報名表</h1><p style="color:var(--ac);letter-spacing:.2em">奇美醫院　教學部</p><p>自由報名・額滿自動候補・可隨時取消</p>
-    <div class="pills"><span class="pill"><b>${open.length}</b>開放課程</span><span class="pill"><b>${seats}</b>剩餘名額</span></div></div>
-    <div class="tabs"><button class="${S.view === "home" ? "on" : ""}" data-act="tab" data-v="home">課程報名</button><button class="${S.view === "mine" ? "on" : ""}" data-act="tab" data-v="mine">我的報名</button></div>`;
+  return `<div class="hero${still}"><div class="mark">${STETH}</div><div class="en">Chi Mei Medical Center</div><h1><span class="yr">${YEAR}</span>臨床技能課程報名表</h1><p style="color:var(--ac);letter-spacing:.2em">奇美醫院　教學部</p><p>自由報名・額滿自動候補・可隨時取消</p>
+    <div class="pills"><span class="pill"><b data-n="${open.length}">${open.length}</b>開放課程</span><span class="pill"><b data-n="${seats}">${seats}</b>剩餘名額</span></div></div>
+    <div class="tabs${still}"><button class="${S.view === "home" ? "on" : ""}" data-act="tab" data-v="home">課程報名</button><button class="${S.view === "mine" ? "on" : ""}" data-act="tab" data-v="mine">我的報名</button></div>`;
 }
 
 function cardHtml(c, idx){
@@ -217,9 +254,9 @@ function cardHtml(c, idx){
   const lv = c.levels.length ? c.levels.map(l => `<span class="lv">${esc(l)}</span>`).join("") : '<span class="lv">不限級別</span>';
   const btn = c.open ? `<button class="blk ${left > 0 ? "" : "outline"}" data-act="reg" data-id="${esc(c.id)}">${left > 0 ? "我要報名" : "登記候補"}</button>` : '<button class="blk ghost" disabled>已截止報名</button>';
   const row = (k, v) => `<div><dt>${k}</dt><dd>${v}</dd></div>`;
-  return `<article class="course ${c.open ? "is-open" : "is-closed"}">
+  return `<article class="course ${c.open ? "is-open" : "is-closed"}" style="animation-delay:${(idx || 0) * 90 + 150}ms">
     <div class="c-top"><span class="c-no">COURSE ${String((idx || 0) + 1).padStart(2, "0")}</span>${st}</div>
-    <div class="c-head"><h2>${esc(c.title)}</h2><div class="c-seat"><b>${left}</b><span>剩餘名額</span></div></div>
+    <div class="c-head"><h2>${esc(c.title)}</h2><div class="c-seat"><b data-n="${left}">${left}</b><span>剩餘名額</span></div></div>
     <dl class="c-info">${row("日期", esc(c.when))}${row("地點", esc(c.place))}${c.note ? row("備註", esc(c.note)) : ""}${row("對象", lv)}${c.deadline ? row("報名截止", esc(c.deadline)) : ""}</dl>
     <div class="c-prog"><div class="c-prog-t"><span>報名進度</span><span><b>${Math.min(c.count, c.cap)}</b> / ${c.cap}${wait ? "・候補 " + wait : ""}</span></div>
     <div class="bar"><i style="width:${pct}%"></i></div></div>
@@ -241,10 +278,23 @@ function mineHtml(){
   return out;
 }
 
+let numsDone = false;
+function countUp(){
+  if (numsDone || !S.courses || !S.courses.length) return;
+  numsDone = true;
+  document.querySelectorAll("[data-n]").forEach(el => {
+    const to = Number(el.dataset.n); if (!to) return;
+    const t0 = performance.now(), dur = 800;
+    el.textContent = "0";
+    const step = now => { const p = Math.min(1, (now - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
 function render(){
   const r = $("#root");
   if (S.view === "admin") { r.innerHTML = S.pw ? adminHtml() : loginHtml(); return; }
   r.innerHTML = heroHtml() + (S.view === "home" ? homeHtml() : mineHtml()) + `<div class="credit">奇美醫院 教學部 編製</div><div class="contact">${esc(CONTACT)}</div><div class="foot"><a data-act="goAdmin">管理者登入</a></div>`;
+  if (S.view === "home") countUp();
 }
 
 function regForm(c, err){
@@ -336,6 +386,17 @@ function downloadCsv(c){
   } catch (e) { toast("無法下載，請改用「複製名單」"); }
 }
 
+
+/* 按鈕回饋：漣漪＋手機輕震 */
+document.addEventListener("pointerdown", e => {
+  const b = e.target.closest("button, .btn-link"); if (!b || b.disabled) return;
+  const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height);
+  const s = document.createElement("span"); s.className = "rip";
+  s.style.cssText = "width:" + d + "px;height:" + d + "px;left:" + (e.clientX - r.left - d / 2) + "px;top:" + (e.clientY - r.top - d / 2) + "px";
+  b.appendChild(s); setTimeout(() => s.remove(), 650);
+  if (navigator.vibrate && !b.matches(".ghost, .danger, .tabs button")) { try { navigator.vibrate(8); } catch (x) {} }
+});
+
 /* ---------- 事件 ---------- */
 document.addEventListener("input", e => { if (e.target.id === "qe") S.mineEmp = e.target.value; });
 $("#mask").addEventListener("click", e => { if (e.target.id === "mask" && !confirmRes) closeSheet(); });
@@ -404,7 +465,7 @@ document.addEventListener("submit", async e => {
   const f = e.target.closest("form[data-form]"); if (!f) return;
   e.preventDefault();
   const kind = f.dataset.form, fd = new FormData(f), btn = f.querySelector("[type=submit]"), err = f.querySelector(".err");
-  const lock = on => { if (btn) { btn.disabled = on; if (on) btn.dataset.t = btn.textContent, btn.textContent = "處理中…"; else btn.textContent = btn.dataset.t || btn.textContent; } };
+  const lock = on => { if (btn) { btn.disabled = on; btn.classList.toggle("busy", on); if (on) btn.dataset.t = btn.textContent, btn.textContent = "處理中…"; else btn.textContent = btn.dataset.t || btn.textContent; } };
 
   if (kind === "reg") {
     const c = S.courses.find(x => x.id === f.dataset.id);
